@@ -125,8 +125,22 @@ public class ExtractorMentions {
 			wikiArticle.setPhrases(phrases);
 			break;
 		case Intermedia:
+			e.extractMentionsRefactoring(text, wikiArticle);
+			wikiArticle.updateMid(mappeddao);
+			text = e.CleanText(text);
+			wikiArticle.setText(text);
+			
+			phrases = sd.getSentences(text);
+			wikiArticle.setPhrases(phrases);
 			break;
 		case Completa:
+			e.extractMentionsRefactoring(text, wikiArticle);
+			wikiArticle.updateMid(mappeddao);
+			text = e.CleanText(text);
+			wikiArticle.setText(text);
+			
+			phrases = sd.getSentences(text);
+			wikiArticle.setPhrases(phrases);
 			break;
 
 		}

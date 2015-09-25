@@ -42,6 +42,7 @@ public class SearcherEntryMapped {
 		reader = DirectoryReader.open(FSDirectory.open(new File(IndexPath)));
 		searcher = new IndexSearcher(reader);
 		analyzer = new StandardAnalyzer(Version.LUCENE_47);
+		parser = new QueryParser(Version.LUCENE_47, Field, analyzer);
 	}
 
 	public static void main(String[] args) throws Exception {
@@ -111,18 +112,12 @@ public class SearcherEntryMapped {
 
 		List<EntryMappedBean> mappingResults = new ArrayList<EntryMappedBean>();
 		int maxHits = 10;
-
-		reader = DirectoryReader.open(FSDirectory.open(new File(IndexPath)));
-		searcher = new IndexSearcher(reader);
-		analyzer = new StandardAnalyzer(Version.LUCENE_47);
-		parser = new QueryParser(Version.LUCENE_47, Field, analyzer);
-
-
+	
 		try {
 			Query query = parser.parse(wikid);
 			//System.out.println("Searching...");
 
-			TopDocs results = searcher.search(query, 5 * maxHits);
+			TopDocs results = searcher.search(query, maxHits);
 			ScoreDoc[] hits = results.scoreDocs;
 
 			for(int i=0;i<hits.length;++i) {
@@ -132,6 +127,7 @@ public class SearcherEntryMapped {
 			}
 
 		} catch (ParseException e) {
+			System.out.println(wikid);
 			System.err.println("Incorrect Query");
 		}
 		return mappingResults;

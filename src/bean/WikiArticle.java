@@ -152,7 +152,7 @@ public class WikiArticle{
 			pair = this.wikiEntities.get(currentEntity);
 			wikid = (String) pair.first;
 			//EntryMappedDAO mappeddao = new EntryMappedDAOImpl();
-			//EntryMappedDAO mappeddao = EntryMappedDAOImpl.instance();
+			//EntryMappedDAO mappeddao2 = EntryMappedDAOImpl.instance();
 			mappingBean = mappeddao.getMidFromWikID(wikid);
 			String mid="";
 			if (mappingBean!=null){

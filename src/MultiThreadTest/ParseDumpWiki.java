@@ -50,7 +50,7 @@ public class ParseDumpWiki {
 		private static String version;
 
 		public DemoArticleFilter() {
-			this.queue = new LinkedBlockingQueue<bean.WikiArticle>(100);
+			this.queue = new LinkedBlockingQueue<bean.WikiArticle>(10);
 		}
 
 		public void addWikiArticle(bean.WikiArticle wikiArticle){
@@ -92,11 +92,11 @@ public class ParseDumpWiki {
 			if (queue.size()==10){
 				System.out.println("OK!");
 				int queueSize = queue.size();
-				int cores =Runtime.getRuntime().availableProcessors()*3;
+				int cores =Runtime.getRuntime().availableProcessors()*2;
 				CountDownLatch latch = new CountDownLatch(cores);
 				Date start = new Date();
 				ExecutorService executor = Executors.newFixedThreadPool(cores);
-				EntryMappedDAO mappeddao = EntryMappedDAOImpl.instance();
+				EntryMappedDAO mappeddao = new EntryMappedDAOImpl();
 				for(int i=0; i < cores; i++) {
 					executor.submit(new Consumer(latch,queue,version,mappeddao));
 				}
