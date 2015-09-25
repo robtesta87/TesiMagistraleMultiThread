@@ -1,5 +1,8 @@
 package bean;
 
+import index.mapping_table.SearcherMid;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -8,8 +11,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import persistence.dao.EntryMappedDAO;
-import persistence.dao.EntryMappedDAOImpl;
 import edu.stanford.nlp.util.Pair;
 
 public class WikiArticle{
@@ -141,19 +142,31 @@ public class WikiArticle{
 		this.wikiEntities.put(text, pair);
 	}
 	
-	public void updateMid ( EntryMappedDAO mappeddao){
+	public void updateMid (SearcherMid searcherMid){
 		Iterator<String> keyIterator = this.wikiEntities.keySet().iterator();
 		String currentEntity = null;
 		Pair pair = null;
 		String wikid = null; 
 		EntryMappedBean mappingBean = null;
+		SearcherMid s=null;
+		try {
+			s = new SearcherMid();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		while(keyIterator.hasNext()){
 			currentEntity = keyIterator.next();
 			pair = this.wikiEntities.get(currentEntity);
 			wikid = (String) pair.first;
-			//EntryMappedDAO mappeddao = new EntryMappedDAOImpl();
-			//EntryMappedDAO mappeddao2 = EntryMappedDAOImpl.instance();
-			mappingBean = mappeddao.getMidFromWikID(wikid);
+			
+			try {
+				mappingBean = s.getMid(wikid);
+				//mappingBean = searcherMid.getMid(wikid);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			String mid="";
 			if (mappingBean!=null){
 				mid= mappingBean.getMid();

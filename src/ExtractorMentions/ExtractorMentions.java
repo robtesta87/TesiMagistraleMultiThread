@@ -1,5 +1,6 @@
 package ExtractorMentions;
 
+import index.mapping_table.SearcherMid;
 import info.bliki.wiki.filter.PlainTextConverter;
 import info.bliki.wiki.model.WikiModel;
 
@@ -11,7 +12,6 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import persistence.dao.EntryMappedDAO;
 import Configuration.Configuration;
 import CutterText.CutterText;
 import bean.WikiArticle;
@@ -100,7 +100,7 @@ public class ExtractorMentions {
 		return text;
 	}
 	
-	public TreeMap<String, Pair<String,String>> getMidModulate (WikiArticle wikiArticle, AbstractSequenceClassifier<CoreLabel> classifier, Version version, EntryMappedDAO mappeddao) throws IOException, ClassCastException, ClassNotFoundException{
+	public TreeMap<String, Pair<String,String>> getMidModulate (WikiArticle wikiArticle, AbstractSequenceClassifier<CoreLabel> classifier, Version version,SearcherMid searcherMid) throws IOException, ClassCastException, ClassNotFoundException{
 		String title = wikiArticle.getTitle();
 		String text = wikiArticle.getText();
 
@@ -117,7 +117,7 @@ public class ExtractorMentions {
 		switch (version) {
 		case Base:
 			e.extractMentionsRefactoring(text, wikiArticle);
-			wikiArticle.updateMid(mappeddao);
+			wikiArticle.updateMid(searcherMid);
 			text = e.CleanText(text);
 			wikiArticle.setText(text);
 			
@@ -126,7 +126,7 @@ public class ExtractorMentions {
 			break;
 		case Intermedia:
 			e.extractMentionsRefactoring(text, wikiArticle);
-			wikiArticle.updateMid(mappeddao);
+			wikiArticle.updateMid(searcherMid);
 			text = e.CleanText(text);
 			wikiArticle.setText(text);
 			
@@ -135,7 +135,7 @@ public class ExtractorMentions {
 			break;
 		case Completa:
 			e.extractMentionsRefactoring(text, wikiArticle);
-			wikiArticle.updateMid(mappeddao);
+			wikiArticle.updateMid(searcherMid);
 			text = e.CleanText(text);
 			wikiArticle.setText(text);
 			

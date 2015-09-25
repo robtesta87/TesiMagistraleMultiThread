@@ -1,5 +1,7 @@
 package MultiThreadTest;
 
+import index.mapping_table.SearcherMid;
+
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -9,7 +11,6 @@ import java.util.TreeMap;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 
-import persistence.dao.EntryMappedDAO;
 import edu.stanford.nlp.ie.AbstractSequenceClassifier;
 import edu.stanford.nlp.ie.crf.CRFClassifier;
 import edu.stanford.nlp.ling.CoreLabel;
@@ -23,13 +24,13 @@ class Consumer implements Runnable {
 	private CountDownLatch latch;
 	private BlockingQueue<bean.WikiArticle> queue;
 	private String version;
-	private EntryMappedDAO mappeddao;
+	private SearcherMid searcherMid;
 
-	public Consumer(CountDownLatch latch, BlockingQueue<bean.WikiArticle> queue,String version,EntryMappedDAO mappeddao) {
+	public Consumer(CountDownLatch latch, BlockingQueue<bean.WikiArticle> queue,String version,SearcherMid searcherMid) {
 		this.latch = latch;
 		this.queue = queue;
 		this.version = version;
-		this.mappeddao = mappeddao;
+		this.searcherMid = searcherMid;
 	}
 
 	public void run() {
@@ -44,15 +45,15 @@ class Consumer implements Runnable {
 				switch (version) {
 				case "Base":
 					
-					treemap = extractor.getMidModulate(wikiArticle,null, Version.Base,mappeddao);
+					treemap = extractor.getMidModulate(wikiArticle,null, Version.Base,searcherMid);
 					break;
 				case "Intermedia":
 					
-					treemap = extractor.getMidModulate(wikiArticle, null, Version.Intermedia,mappeddao);
+					treemap = extractor.getMidModulate(wikiArticle, null, Version.Intermedia,searcherMid);
 					break;
 				case "Completa":
 					
-					treemap = extractor.getMidModulate(wikiArticle, null, Version.Completa,mappeddao);
+					treemap = extractor.getMidModulate(wikiArticle, null, Version.Completa,searcherMid);
 					break;
 				default:
 					System.out.println("Versione non specificata correttamente nel file di configurazione");

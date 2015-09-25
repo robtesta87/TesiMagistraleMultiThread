@@ -100,7 +100,7 @@ public class SearcherEntryMapped {
 				else
 					System.out.println(hits.length + " results found for:\t"
 							+ readableQuery);
-				
+
 			} catch (ParseException e) {
 				System.err.println("Incorrect Query");
 			}
@@ -112,17 +112,17 @@ public class SearcherEntryMapped {
 
 		List<EntryMappedBean> mappingResults = new ArrayList<EntryMappedBean>();
 		int maxHits = 10;
-	
+
 		try {
 			Query query = parser.parse(wikid);
 			//System.out.println("Searching...");
 
 			TopDocs results = searcher.search(query, maxHits);
 			ScoreDoc[] hits = results.scoreDocs;
-
-			for(int i=0;i<hits.length;++i) {
-				int docId = hits[i].doc;
+			if (hits.length>0){
+				int docId = hits[0].doc;
 				Document d = searcher.doc(docId);
+				EntryMappedBean entry = new EntryMappedBean(d.get("title"),  d.get("mid"));
 				mappingResults.add(new EntryMappedBean(d.get("title"),  d.get("mid")));
 			}
 

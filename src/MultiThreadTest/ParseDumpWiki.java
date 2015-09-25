@@ -20,8 +20,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import org.xml.sax.SAXException;
 
-import persistence.dao.EntryMappedDAO;
-import persistence.dao.EntryMappedDAOImpl;
 import edu.stanford.nlp.ie.AbstractSequenceClassifier;
 import edu.stanford.nlp.ie.crf.CRFClassifier;
 import edu.stanford.nlp.ling.CoreLabel;
@@ -29,6 +27,7 @@ import edu.stanford.nlp.util.Pair;
 import Configuration.Configuration;
 import ExtractorMentions.ExtractorMentions;
 import ExtractorMentions.ExtractorMentions.Version;
+import index.mapping_table.SearcherMid;
 import info.bliki.wiki.dump.IArticleFilter;
 import info.bliki.wiki.dump.Siteinfo;
 import info.bliki.wiki.dump.WikiArticle;
@@ -92,13 +91,21 @@ public class ParseDumpWiki {
 			if (queue.size()==10){
 				System.out.println("OK!");
 				int queueSize = queue.size();
-				int cores =Runtime.getRuntime().availableProcessors()*2;
+				int cores =Runtime.getRuntime().availableProcessors()/2;
 				CountDownLatch latch = new CountDownLatch(cores);
 				Date start = new Date();
 				ExecutorService executor = Executors.newFixedThreadPool(cores);
-				EntryMappedDAO mappeddao = new EntryMappedDAOImpl();
+				
+				SearcherMid searcherMid;
+				try {
+					searcherMid = new SearcherMid();
+				
 				for(int i=0; i < cores; i++) {
-					executor.submit(new Consumer(latch,queue,version,mappeddao));
+					executor.submit(new Consumer(latch,queue,version,searcherMid));
+				}
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
 				}
 
 				try {
