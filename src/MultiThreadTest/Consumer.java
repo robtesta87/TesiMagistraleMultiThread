@@ -34,26 +34,42 @@ class Consumer implements Runnable {
 	}
 
 	public void run() {
+		Configuration config = new Configuration();
 		System.out.println("Started.");
+		System.out.println("thread: "+Thread.currentThread().getName());
+		//avvio del classificatore del ner
+		String serializedClassifier = config.classificatore;
+		AbstractSequenceClassifier<CoreLabel> classifier = null;
+		
+		/*
+		try {
+			classifier = CRFClassifier.getClassifier(serializedClassifier);
+		} catch (ClassCastException | ClassNotFoundException | IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		*/
+		
 		String value;
 		WikiArticle wikiArticle = null;
 		TreeMap<String, Pair<String,String>> treemap = null;
-		System.out.println("thread: "+Thread.currentThread().getName());
 		ExtractorMentions extractor = new ExtractorMentions();
 		while ((wikiArticle = queue.poll()) != null){
 			try {
 				switch (version) {
 				case "Base":
 					//treemap = extractor.getMidModulate(wikiArticle,null, Version.Base,searcherMid);
-					treemap = extractor.getMid(wikiArticle,null, Version.Base,searcherMid);
+					synchronized(searcherMid){
+						treemap = extractor.getMid(wikiArticle,classifier, Version.Base,searcherMid);
+					}
 					break;
 				case "Intermedia":
 					//treemap = extractor.getMidModulate(wikiArticle, null, Version.Intermedia,searcherMid);
-					treemap = extractor.getMid(wikiArticle, null, Version.Intermedia,searcherMid);
+					treemap = extractor.getMid(wikiArticle, classifier, Version.Intermedia,searcherMid);
 					break;
 				case "Completa":
 					//treemap = extractor.getMidModulate(wikiArticle, null, Version.Completa,searcherMid);
-					treemap = extractor.getMid(wikiArticle, null, Version.Completa,searcherMid);
+					treemap = extractor.getMid(wikiArticle, classifier, Version.Completa,searcherMid);
 					break;
 				default:
 					System.out.println("Versione non specificata correttamente nel file di configurazione");

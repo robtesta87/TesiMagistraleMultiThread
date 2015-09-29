@@ -149,6 +149,53 @@ public class ExtractorMentions {
 		return text;
 	}
 	
+	public void addPerson(List<String> entities, WikiArticle wikiArticle){
+		String currentEntity= null;
+		TreeMap<String, Pair<String,String>> treemap = null;
+
+		for (int i = 0; i < entities.size(); i++) {
+			currentEntity = entities.get(i);
+			treemap = wikiArticle.getWikiEntities();
+			String[] personSpitted = currentEntity.split(" ");
+			Pair<String,String> pair = treemap.get(currentEntity);
+			if (currentEntity.equals(wikiArticle.getTitle())){
+				wikiArticle.addMention(currentEntity,pair.first,pair.second);
+				wikiArticle.addMentionPerson(personSpitted[personSpitted.length-1],wikiArticle.getWikid(),pair.second);
+			}
+			else{
+
+				String[] titleSplitted = wikiArticle.getTitle().split(" ");
+
+				if ((wikiArticle.getTitle().contains(currentEntity))&&(titleSplitted[titleSplitted.length-1].equals(personSpitted[personSpitted.length-1]))){
+					pair =treemap.get(wikiArticle.getTitle());
+					wikiArticle.addMention(currentEntity,pair.first,pair.second);
+					wikiArticle.addMentionPerson(personSpitted[personSpitted.length-1],wikiArticle.getWikid(),pair.second);
+
+				}
+				else{
+					if (pair!=null){
+						wikiArticle.addMention(currentEntity,pair.first,pair.second);
+						wikiArticle.addMentionPerson(personSpitted[personSpitted.length-1],pair.first,pair.second);
+					}
+				}
+			}
+		}
+	}
+	
+	public void addEntity(List<String> entities, WikiArticle wikiArticle){
+		String currentEntity= null;
+		TreeMap<String, Pair<String,String>> treemap = wikiArticle.getWikiEntities();
+
+		for (int i = 0; i < entities.size(); i++) {
+			currentEntity = entities.get(i);
+			if (treemap.containsKey(currentEntity)){
+				Pair<String,String> pair = treemap.get(currentEntity);
+				wikiArticle.addMention(currentEntity,pair.first,pair.second);
+			}
+		}
+
+	}
+	
 	public TreeMap<String, Pair<String,String>> getMidModulate (WikiArticle wikiArticle, AbstractSequenceClassifier<CoreLabel> classifier, Version version,SearcherMid searcherMid) throws IOException, ClassCastException, ClassNotFoundException{
 		String title = wikiArticle.getTitle();
 		String text = wikiArticle.getText();
@@ -163,6 +210,9 @@ public class ExtractorMentions {
 		EntityDetect ed = new EntityDetect();
 		SentenceDetect sd = new SentenceDetect();
 		List<String> phrases = null;
+		Map<String,List<String>> entitiesMap = null;
+
+		
 		switch (version) {
 		case Base:
 			e.extractMentionsRefactoring(text, wikiArticle);
@@ -180,6 +230,17 @@ public class ExtractorMentions {
 			wikiArticle.setText(text);
 			
 			phrases = sd.getSentences(text);
+			
+			//mappa di tutte le entità riconosciute dal NER con duplicati
+			entitiesMap = ed.getEntitiesFromPhrasesListMap(phrases, classifier);
+			
+			e.addPerson(entitiesMap.get("PERSON"), wikiArticle);
+			
+			//controllo se nelle entità ci sono dei match esatti nelle mention originali per il controllo quantitativo
+			e.addEntity(entitiesMap.get("ORGANIZATION"), wikiArticle);
+			e.addEntity(entitiesMap.get("MISC"), wikiArticle);
+			e.addEntity(entitiesMap.get("LOCATION"), wikiArticle);
+			
 			wikiArticle.setPhrases(phrases);
 			break;
 		case Completa:
@@ -204,6 +265,8 @@ public class ExtractorMentions {
 		EntityDetect ed = new EntityDetect();
 		SentenceDetect sd = new SentenceDetect();
 		List<String> phrases = null;
+		Map<String,List<String>> entitiesMap = null;
+		
 		switch (version) {
 		case Base:
 			e.extractMentions(text, wikiArticle);
@@ -217,6 +280,18 @@ public class ExtractorMentions {
 			wikiArticle.updateMid(searcherMid);
 						
 			phrases = sd.getSentences(text);
+			
+			//mappa di tutte le entità riconosciute dal NER con duplicati
+			entitiesMap = ed.getEntitiesFromPhrasesListMap(phrases, classifier);
+			
+			e.addPerson(entitiesMap.get("PERSON"), wikiArticle);
+			
+			//controllo se nelle entità ci sono dei match esatti nelle mention originali per il controllo quantitativo
+			e.addEntity(entitiesMap.get("ORGANIZATION"), wikiArticle);
+			e.addEntity(entitiesMap.get("MISC"), wikiArticle);
+			e.addEntity(entitiesMap.get("LOCATION"), wikiArticle);
+			
+			
 			wikiArticle.setPhrases(phrases);
 			break;
 		case Completa:
@@ -224,6 +299,19 @@ public class ExtractorMentions {
 			wikiArticle.updateMid(searcherMid);
 						
 			phrases = sd.getSentences(text);
+			
+			//mappa di tutte le entità riconosciute dal NER con duplicati
+			entitiesMap = ed.getEntitiesFromPhrasesListMap(phrases, classifier);
+			
+			e.addPerson(entitiesMap.get("PERSON"), wikiArticle);
+			
+			//controllo se nelle entità ci sono dei match esatti nelle mention originali per il controllo quantitativo
+			e.addEntity(entitiesMap.get("ORGANIZATION"), wikiArticle);
+			e.addEntity(entitiesMap.get("MISC"), wikiArticle);
+			e.addEntity(entitiesMap.get("LOCATION"), wikiArticle);
+			
+			
+			
 			wikiArticle.setPhrases(phrases);
 			break;
 
