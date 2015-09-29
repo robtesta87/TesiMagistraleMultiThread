@@ -172,8 +172,7 @@ public class WikiArticle{
 				mid= mappingBean.getMid();
 				pair.setSecond(mid);
 			}
-			else 
-				keyIterator.remove();
+			
 			
 		}
 	}

@@ -44,16 +44,16 @@ class Consumer implements Runnable {
 			try {
 				switch (version) {
 				case "Base":
-					
-					treemap = extractor.getMidModulate(wikiArticle,null, Version.Base,searcherMid);
+					//treemap = extractor.getMidModulate(wikiArticle,null, Version.Base,searcherMid);
+					treemap = extractor.getMid(wikiArticle,null, Version.Base,searcherMid);
 					break;
 				case "Intermedia":
-					
-					treemap = extractor.getMidModulate(wikiArticle, null, Version.Intermedia,searcherMid);
+					//treemap = extractor.getMidModulate(wikiArticle, null, Version.Intermedia,searcherMid);
+					treemap = extractor.getMid(wikiArticle, null, Version.Intermedia,searcherMid);
 					break;
 				case "Completa":
-					
-					treemap = extractor.getMidModulate(wikiArticle, null, Version.Completa,searcherMid);
+					//treemap = extractor.getMidModulate(wikiArticle, null, Version.Completa,searcherMid);
+					treemap = extractor.getMid(wikiArticle, null, Version.Completa,searcherMid);
 					break;
 				default:
 					System.out.println("Versione non specificata correttamente nel file di configurazione");

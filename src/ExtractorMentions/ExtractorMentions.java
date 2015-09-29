@@ -93,6 +93,55 @@ public class ExtractorMentions {
 		wikiArticle.setText(text);
 	}
 	
+	public  void extractMentions (String text, WikiArticle wikiArticle){
+
+		wikiArticle.addMention(wikiArticle.getTitle());
+		Pattern pattern = Pattern.compile(mentionRegex);
+		Matcher matcher = pattern.matcher(text);
+		while(matcher.find()){
+			String mentionString = matcher.group();
+			String stringCleaned = mentionString.substring(2, mentionString.length()-2);
+			//System.out.println(stringCleaned);
+
+			if(stringCleaned.contains("|")){
+				String[] splitted = stringCleaned.split("\\|");
+				//primo campo: text secondo campo: wikiid
+				if (!(splitted[0].contains("#"))){
+					wikiArticle.addMention(splitted[0]);
+					text = text.replace(mentionString, splitted[0]);
+				}
+			}
+			else{
+				//evito di inserire le sotto-mention
+				if (!(stringCleaned.contains("#"))){
+					wikiArticle.addMention(stringCleaned);
+					text = text.replace(mentionString, stringCleaned);
+				}
+				else{
+					//provo a prendere l'articolo riguardante la sotto-mention anzichè scartarla
+					wikiArticle.addMention(stringCleaned.split("#")[0]);
+					text = text.replace(mentionString, stringCleaned);
+				}
+
+			}
+
+		}	
+
+		//rilevamento mention dalle parole in grassetto
+		pattern = Pattern.compile(boldRegex);
+		if (text.length()>300)
+			matcher = pattern.matcher(text.substring(0, 300));
+		else
+			matcher = pattern.matcher(text.substring(0, text.length()-1));
+		while(matcher.find()){
+			String mentionString = matcher.group();
+			String stringCleaned = mentionString.substring(3, mentionString.length()-3);
+			wikiArticle.addMention(stringCleaned, wikiArticle.getWikid());
+		}	
+
+		wikiArticle.setText(text);
+	}
+	
 	public static String CleanText (String text){
 		//pulizia testo
 		WikiModel wikiModel = new WikiModel("http://www.mywiki.com/wiki/${image}", "http://www.mywiki.com/wiki/${title}");
@@ -139,6 +188,41 @@ public class ExtractorMentions {
 			text = e.CleanText(text);
 			wikiArticle.setText(text);
 			
+			phrases = sd.getSentences(text);
+			wikiArticle.setPhrases(phrases);
+			break;
+
+		}
+		return wikiArticle.getWikiEntities();
+	}
+	
+	public TreeMap<String, Pair<String,String>> getMid(WikiArticle wikiArticle, AbstractSequenceClassifier<CoreLabel> classifier, Version version,SearcherMid searcherMid) throws IOException, ClassCastException, ClassNotFoundException{
+		String title = wikiArticle.getTitle();
+		String text = wikiArticle.getText();
+
+		ExtractorMentions e = new ExtractorMentions();
+		EntityDetect ed = new EntityDetect();
+		SentenceDetect sd = new SentenceDetect();
+		List<String> phrases = null;
+		switch (version) {
+		case Base:
+			e.extractMentions(text, wikiArticle);
+			wikiArticle.updateMid(searcherMid);
+						
+			phrases = sd.getSentences(text);
+			wikiArticle.setPhrases(phrases);
+			break;
+		case Intermedia:
+			e.extractMentionsRefactoring(text, wikiArticle);
+			wikiArticle.updateMid(searcherMid);
+						
+			phrases = sd.getSentences(text);
+			wikiArticle.setPhrases(phrases);
+			break;
+		case Completa:
+			e.extractMentionsRefactoring(text, wikiArticle);
+			wikiArticle.updateMid(searcherMid);
+						
 			phrases = sd.getSentences(text);
 			wikiArticle.setPhrases(phrases);
 			break;

@@ -19,6 +19,7 @@ public class Configuration {
 	static public String mentionIntermediaPath = null;
 	static public String mentionCompletaPath = null;
 	static public String dumpWikiPath = null;
+	static public String segmentWikiExtractorPath = null;
 	
 	public  Configuration(){
 		try{
@@ -39,6 +40,8 @@ public class Configuration {
 			mentionIntermediaPath =  props.getProperty("mentionIntermediaPath").toString();
 			mentionCompletaPath =  props.getProperty("mentionCompletaPath").toString();
 			dumpWikiPath =  props.getProperty("dumpWikiPath").toString();
+			segmentWikiExtractorPath = props.getProperty("segmentWikiExtractorPath").toString();
+
 			
 		} 
 		catch(Exception e){
