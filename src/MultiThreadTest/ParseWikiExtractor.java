@@ -25,7 +25,7 @@ import bean.WikiArticle;
 import Configuration.Configuration;
 
 public class ParseWikiExtractor {
-	private static int cores =Runtime.getRuntime().availableProcessors()*2;
+	private static int cores =Runtime.getRuntime().availableProcessors()/2;
 
 	public static BufferedReader getBufferedReaderForCompressedFile(String fileIn) throws FileNotFoundException, CompressorException {
 		FileInputStream fin = new FileInputStream(fileIn);

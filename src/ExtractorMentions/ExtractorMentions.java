@@ -140,7 +140,7 @@ public class ExtractorMentions {
 			}
 
 		}	
-/*
+
 		//rilevamento mention dalle parole in grassetto
 		pattern = Pattern.compile(boldRegex);
 		if (text.length()>300)
@@ -149,9 +149,10 @@ public class ExtractorMentions {
 			matcher = pattern.matcher(text.substring(0, text.length()-1));
 		while(matcher.find()){
 			String mentionString = matcher.group();
-			String stringCleaned = mentionString.substring(3, mentionString.length()-3);
+			System.out.println("bold: "+mentionString);
+			String stringCleaned = mentionString.substring(2, mentionString.length()-2);
 			wikiArticle.addMention(stringCleaned, wikiArticle.getWikid());
-		}	*/
+		}	
 
 		wikiArticle.setText(text);
 	}	
