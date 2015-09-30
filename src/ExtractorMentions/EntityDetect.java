@@ -28,7 +28,7 @@ public class EntityDetect {
 		List<String> location = new ArrayList<String>();
 		List<String> organization = new ArrayList<String>();
 		Map<String,List<String>> entityMap = new HashMap<String, List<String>>();
-
+		/*
 		try {
 			for(String currentPhrase : phrases){
 				List<Triple<String,Integer,Integer>> triples = classifier.classifyToCharacterOffsets(currentPhrase);
@@ -59,7 +59,10 @@ public class EntityDetect {
 		entityMap.put("PERSON", person);
 		entityMap.put("LOCATION",location);
 		entityMap.put("ORGANIZATION", organization);
-		entityMap.put("MISC", misc);
+		entityMap.put("MISC", misc);*/
+		for (String str : phrases) {
+	        System.out.print(classifier.classifyToString(str, "tsv", false));
+	      }
 		return entityMap;
 
 	}

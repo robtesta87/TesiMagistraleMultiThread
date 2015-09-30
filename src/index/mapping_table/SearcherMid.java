@@ -39,14 +39,13 @@ public class SearcherMid {
 		parser = new QueryParser(Version.LUCENE_47, Field, analyzer);
 	}
 
-	public EntryMappedBean getMid(String wikid) throws IOException, UnsupportedEncodingException {
+	public synchronized EntryMappedBean getMid(String wikid) throws IOException, UnsupportedEncodingException {
 		EntryMappedBean entryMid =null;
 		List<EntryMappedBean> mappingResults = new ArrayList<EntryMappedBean>();
 		int maxHits = 10;
 
 		try {
 			if (!wikid.equals("")){
-				//System.out.println("WIKID: "+wikid);
 				Query query = parser.parse(QueryParser.escape(wikid));
 
 				TopDocs results = searcher.search(query, maxHits);
@@ -56,6 +55,9 @@ public class SearcherMid {
 					Document d = searcher.doc(docId);
 					mappingResults.add(new EntryMappedBean(d.get("title"),  d.get("mid")));
 				}
+			}
+			else{
+				System.out.println("wikid vuoto");
 			}
 
 		} catch (ParseException e) {
@@ -69,7 +71,7 @@ public class SearcherMid {
 	}
 	public static void main(String[] args) throws UnsupportedEncodingException, IOException {
 		SearcherMid sm = new SearcherMid();
-		//EntryMappedBean e = getMid("Alfred_Nobel");
+		//EntryMappedBean e = getMid("ambassador");
 		//System.out.println(e.getMid());
 	}
 }

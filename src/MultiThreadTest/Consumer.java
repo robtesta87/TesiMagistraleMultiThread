@@ -40,16 +40,13 @@ class Consumer implements Runnable {
 		//avvio del classificatore del ner
 		String serializedClassifier = config.classificatore;
 		AbstractSequenceClassifier<CoreLabel> classifier = null;
-		
-		/*
 		try {
 			classifier = CRFClassifier.getClassifier(serializedClassifier);
 		} catch (ClassCastException | ClassNotFoundException | IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		*/
-		
+			
 		String value;
 		WikiArticle wikiArticle = null;
 		TreeMap<String, Pair<String,String>> treemap = null;
@@ -59,13 +56,13 @@ class Consumer implements Runnable {
 				switch (version) {
 				case "Base":
 					//treemap = extractor.getMidModulate(wikiArticle,null, Version.Base,searcherMid);
-					synchronized(searcherMid){
-						treemap = extractor.getMid(wikiArticle,classifier, Version.Base,searcherMid);
-					}
+					treemap = extractor.getMid(wikiArticle,classifier, Version.Base,searcherMid);
 					break;
 				case "Intermedia":
 					//treemap = extractor.getMidModulate(wikiArticle, null, Version.Intermedia,searcherMid);
-					treemap = extractor.getMid(wikiArticle, classifier, Version.Intermedia,searcherMid);
+					synchronized(classifier){
+						treemap = extractor.getMid(wikiArticle, classifier, Version.Intermedia,searcherMid);
+					}
 					break;
 				case "Completa":
 					//treemap = extractor.getMidModulate(wikiArticle, null, Version.Completa,searcherMid);

@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.apache.lucene.search.Query;
+
 import edu.stanford.nlp.util.Pair;
 
 public class WikiArticle{

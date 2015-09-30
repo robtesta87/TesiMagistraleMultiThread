@@ -61,9 +61,15 @@ public class ExtractorMentions {
 				splitted = stringCleaned.split("\\|");
 				//primo campo: text secondo campo: wikiid
 				if (!(splitted[0].contains("#"))){
-					wikiArticle.addMention(splitted[0]);
-					text = text.replace(mentionString, "[["+splitted[0]+"]]");
+					if (!splitted[0].equals("")){
+						wikiArticle.addMention(splitted[0]);
+						text = text.replace(mentionString, "[["+splitted[0]+"]]");
+					}
+					else{
+						text = text.replace(mentionString, splitted[1]);
+					}
 				}
+				
 			}
 			else{
 				//evito di inserire le sotto-mention
@@ -101,14 +107,23 @@ public class ExtractorMentions {
 		while(matcher.find()){
 			String mentionString = matcher.group();
 			String stringCleaned = mentionString.substring(2, mentionString.length()-2);
-			//System.out.println(stringCleaned);
-
 			if(stringCleaned.contains("|")){
 				String[] splitted = stringCleaned.split("\\|");
 				//primo campo: text secondo campo: wikiid
 				if (!(splitted[0].contains("#"))){
-					wikiArticle.addMention(splitted[0]);
-					text = text.replace(mentionString, splitted[0]);
+					if (!splitted[0].equals("")){
+						wikiArticle.addMention(splitted[0]);
+						text = text.replace(mentionString, splitted[0]);
+					}
+					else{
+						text = text.replace(mentionString, splitted[1]);
+					}
+				}
+				else{
+					//provo a prendere l'articolo riguardante la sotto-mention anzichè scartarla
+					wikiArticle.addMention(splitted[0].split("#")[0]);
+
+					text = text.replace(mentionString, stringCleaned);
 				}
 			}
 			else{
@@ -140,8 +155,7 @@ public class ExtractorMentions {
 		}	
 
 		wikiArticle.setText(text);
-	}
-	
+	}	
 	public static String CleanText (String text){
 		//pulizia testo
 		WikiModel wikiModel = new WikiModel("http://www.mywiki.com/wiki/${image}", "http://www.mywiki.com/wiki/${title}");
@@ -277,19 +291,19 @@ public class ExtractorMentions {
 			break;
 		case Intermedia:
 			e.extractMentionsRefactoring(text, wikiArticle);
-			wikiArticle.updateMid(searcherMid);
+			//wikiArticle.updateMid(searcherMid);
 						
 			phrases = sd.getSentences(text);
 			
 			//mappa di tutte le entità riconosciute dal NER con duplicati
 			entitiesMap = ed.getEntitiesFromPhrasesListMap(phrases, classifier);
 			
-			e.addPerson(entitiesMap.get("PERSON"), wikiArticle);
+			//e.addPerson(entitiesMap.get("PERSON"), wikiArticle);
 			
 			//controllo se nelle entità ci sono dei match esatti nelle mention originali per il controllo quantitativo
-			e.addEntity(entitiesMap.get("ORGANIZATION"), wikiArticle);
-			e.addEntity(entitiesMap.get("MISC"), wikiArticle);
-			e.addEntity(entitiesMap.get("LOCATION"), wikiArticle);
+			//e.addEntity(entitiesMap.get("ORGANIZATION"), wikiArticle);
+			//e.addEntity(entitiesMap.get("MISC"), wikiArticle);
+			//e.addEntity(entitiesMap.get("LOCATION"), wikiArticle);
 			
 			
 			wikiArticle.setPhrases(phrases);

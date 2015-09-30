@@ -83,7 +83,7 @@ public class ParseWikiExtractor {
 			e1.printStackTrace();
 		}
 		*/
-
+		System.out.println("Versione selezionata: "+config.version);
 		File dir = new File(config.segmentWikiExtractorPath);
 		File[] directoryListing = dir.listFiles();
 		String text = null;
@@ -128,7 +128,7 @@ public class ParseWikiExtractor {
 						if (queue.size()==maxSizeQueue){
 							System.out.println("OK!");
 							int queueSize = queue.size();
-							int cores =Runtime.getRuntime().availableProcessors()/2;
+							int cores =Runtime.getRuntime().availableProcessors()*2;
 							CountDownLatch latch = new CountDownLatch(cores);
 							Date start = new Date();
 							ExecutorService executor = Executors.newFixedThreadPool(cores);
