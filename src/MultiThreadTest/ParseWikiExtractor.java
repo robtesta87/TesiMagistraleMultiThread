@@ -40,8 +40,8 @@ import ExtractorMentions.ExtractorMentions;
 
 public class ParseWikiExtractor {
 	private static BlockingQueue<bean.WikiArticle> queue;
-	private static int maxSizeQueue = 2000;
-	private static int cores =Runtime.getRuntime().availableProcessors()/2;
+	private static int maxSizeQueue = 500;
+	private static int cores =Runtime.getRuntime().availableProcessors()*2;
 
 
 	

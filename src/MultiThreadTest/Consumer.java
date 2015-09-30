@@ -62,7 +62,7 @@ class Consumer implements Runnable {
 					//System.out.println("thread: "+Thread.currentThread().getName()+" articolo: "+wikiArticle.getTitle());
 					//treemap = extractor.getMidModulate(wikiArticle,null, Version.Base,searcherMid);
 					//treemap = extractor.getMid(wikiArticle,classifier, Version.Base,searcherMid);
-					for (int i = 0; i < 2000; i++) {
+					for (int i = 0; i < 10000; i++) {
 						//wikiArticle.addMention(wikiArticle.getTitle()+" "+i);
 						list.add(" "+i);
 					}
