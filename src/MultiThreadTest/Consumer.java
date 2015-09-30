@@ -6,7 +6,9 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.TreeMap;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
@@ -39,14 +41,16 @@ class Consumer implements Runnable {
 		System.out.println("thread: "+Thread.currentThread().getName());
 		//avvio del classificatore del ner
 		String serializedClassifier = config.classificatore;
+		List<String> list = new ArrayList<String>();
 		AbstractSequenceClassifier<CoreLabel> classifier = null;
+		/*
 		try {
 			classifier = CRFClassifier.getClassifier(serializedClassifier);
 		} catch (ClassCastException | ClassNotFoundException | IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-			
+		*/
 		String value;
 		WikiArticle wikiArticle = null;
 		TreeMap<String, Pair<String,String>> treemap = null;
@@ -55,8 +59,13 @@ class Consumer implements Runnable {
 			try {
 				switch (version) {
 				case "Base":
+					//System.out.println("thread: "+Thread.currentThread().getName()+" articolo: "+wikiArticle.getTitle());
 					//treemap = extractor.getMidModulate(wikiArticle,null, Version.Base,searcherMid);
-					treemap = extractor.getMid(wikiArticle,classifier, Version.Base,searcherMid);
+					//treemap = extractor.getMid(wikiArticle,classifier, Version.Base,searcherMid);
+					for (int i = 0; i < 2000; i++) {
+						//wikiArticle.addMention(wikiArticle.getTitle()+" "+i);
+						list.add(" "+i);
+					}
 					break;
 				case "Intermedia":
 					//treemap = extractor.getMidModulate(wikiArticle, null, Version.Intermedia,searcherMid);

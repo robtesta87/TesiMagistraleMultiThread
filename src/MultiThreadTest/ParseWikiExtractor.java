@@ -40,7 +40,8 @@ import ExtractorMentions.ExtractorMentions;
 
 public class ParseWikiExtractor {
 	private static BlockingQueue<bean.WikiArticle> queue;
-	private static int maxSizeQueue = 10;
+	private static int maxSizeQueue = 2000;
+	private static int cores =Runtime.getRuntime().availableProcessors()/2;
 
 
 	
@@ -128,7 +129,7 @@ public class ParseWikiExtractor {
 						if (queue.size()==maxSizeQueue){
 							System.out.println("OK!");
 							int queueSize = queue.size();
-							int cores =Runtime.getRuntime().availableProcessors()*2;
+							
 							CountDownLatch latch = new CountDownLatch(cores);
 							Date start = new Date();
 							ExecutorService executor = Executors.newFixedThreadPool(cores);

@@ -220,7 +220,6 @@ public class ExtractorMentions {
 
 		//elimino tutti i ref presenti nel testo
 		text = cutterText.cutRef(text);
-		ExtractorMentions e = new ExtractorMentions();
 		EntityDetect ed = new EntityDetect();
 		SentenceDetect sd = new SentenceDetect();
 		List<String> phrases = null;
@@ -229,38 +228,37 @@ public class ExtractorMentions {
 		
 		switch (version) {
 		case Base:
-			e.extractMentionsRefactoring(text, wikiArticle);
+			extractMentionsRefactoring(text, wikiArticle);
 			wikiArticle.updateMid(searcherMid);
-			text = e.CleanText(text);
+			text = CleanText(text);
 			wikiArticle.setText(text);
 			
 			phrases = sd.getSentences(text);
 			wikiArticle.setPhrases(phrases);
 			break;
 		case Intermedia:
-			e.extractMentionsRefactoring(text, wikiArticle);
+			extractMentionsRefactoring(text, wikiArticle);
 			wikiArticle.updateMid(searcherMid);
-			text = e.CleanText(text);
+			text = CleanText(text);
 			wikiArticle.setText(text);
 			
 			phrases = sd.getSentences(text);
 			
 			//mappa di tutte le entità riconosciute dal NER con duplicati
 			entitiesMap = ed.getEntitiesFromPhrasesListMap(phrases, classifier);
-			
-			e.addPerson(entitiesMap.get("PERSON"), wikiArticle);
+			addPerson(entitiesMap.get("PERSON"), wikiArticle);
 			
 			//controllo se nelle entità ci sono dei match esatti nelle mention originali per il controllo quantitativo
-			e.addEntity(entitiesMap.get("ORGANIZATION"), wikiArticle);
-			e.addEntity(entitiesMap.get("MISC"), wikiArticle);
-			e.addEntity(entitiesMap.get("LOCATION"), wikiArticle);
+			addEntity(entitiesMap.get("ORGANIZATION"), wikiArticle);
+			addEntity(entitiesMap.get("MISC"), wikiArticle);
+			addEntity(entitiesMap.get("LOCATION"), wikiArticle);
 			
 			wikiArticle.setPhrases(phrases);
 			break;
 		case Completa:
-			e.extractMentionsRefactoring(text, wikiArticle);
+			extractMentionsRefactoring(text, wikiArticle);
 			wikiArticle.updateMid(searcherMid);
-			text = e.CleanText(text);
+			text = CleanText(text);
 			wikiArticle.setText(text);
 			
 			phrases = sd.getSentences(text);
@@ -275,7 +273,7 @@ public class ExtractorMentions {
 		String title = wikiArticle.getTitle();
 		String text = wikiArticle.getText();
 
-		ExtractorMentions e = new ExtractorMentions();
+		
 		EntityDetect ed = new EntityDetect();
 		SentenceDetect sd = new SentenceDetect();
 		List<String> phrases = null;
@@ -283,14 +281,15 @@ public class ExtractorMentions {
 		
 		switch (version) {
 		case Base:
-			e.extractMentions(text, wikiArticle);
-			wikiArticle.updateMid(searcherMid);
+			
+			extractMentions(text, wikiArticle);
+			//wikiArticle.updateMid(searcherMid);
 						
-			phrases = sd.getSentences(text);
-			wikiArticle.setPhrases(phrases);
+			//phrases = sd.getSentences(text);
+			//wikiArticle.setPhrases(phrases);
 			break;
 		case Intermedia:
-			e.extractMentions(text, wikiArticle);
+			extractMentions(text, wikiArticle);
 			wikiArticle.updateMid(searcherMid);
 						
 			phrases = sd.getSentences(text);
@@ -298,18 +297,18 @@ public class ExtractorMentions {
 			//mappa di tutte le entità riconosciute dal NER con duplicati
 			entitiesMap = ed.getEntitiesFromPhrasesListMap(phrases, classifier);
 			
-			e.addPerson(entitiesMap.get("PERSON"), wikiArticle);
+			addPerson(entitiesMap.get("PERSON"), wikiArticle);
 			
 			//controllo se nelle entità ci sono dei match esatti nelle mention originali per il controllo quantitativo
-			e.addEntity(entitiesMap.get("ORGANIZATION"), wikiArticle);
-			e.addEntity(entitiesMap.get("MISC"), wikiArticle);
-			e.addEntity(entitiesMap.get("LOCATION"), wikiArticle);
+			addEntity(entitiesMap.get("ORGANIZATION"), wikiArticle);
+			addEntity(entitiesMap.get("MISC"), wikiArticle);
+			addEntity(entitiesMap.get("LOCATION"), wikiArticle);
 			
 			
 			wikiArticle.setPhrases(phrases);
 			break;
 		case Completa:
-			e.extractMentionsRefactoring(text, wikiArticle);
+			extractMentionsRefactoring(text, wikiArticle);
 			wikiArticle.updateMid(searcherMid);
 						
 			phrases = sd.getSentences(text);
@@ -317,12 +316,12 @@ public class ExtractorMentions {
 			//mappa di tutte le entità riconosciute dal NER con duplicati
 			entitiesMap = ed.getEntitiesFromPhrasesListMap(phrases, classifier);
 			
-			e.addPerson(entitiesMap.get("PERSON"), wikiArticle);
+			addPerson(entitiesMap.get("PERSON"), wikiArticle);
 			
 			//controllo se nelle entità ci sono dei match esatti nelle mention originali per il controllo quantitativo
-			e.addEntity(entitiesMap.get("ORGANIZATION"), wikiArticle);
-			e.addEntity(entitiesMap.get("MISC"), wikiArticle);
-			e.addEntity(entitiesMap.get("LOCATION"), wikiArticle);
+			addEntity(entitiesMap.get("ORGANIZATION"), wikiArticle);
+			addEntity(entitiesMap.get("MISC"), wikiArticle);
+			addEntity(entitiesMap.get("LOCATION"), wikiArticle);
 			
 			
 			

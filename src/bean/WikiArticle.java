@@ -17,19 +17,19 @@ import edu.stanford.nlp.util.Pair;
 
 public class WikiArticle{
 	//
-	private String title;
-	private String wikid;
+	private static String title;
+	private static String wikid;
 
-	private String text;
+	private static String text;
 
 	// testo--->wikid,mid
-	TreeMap<String, Pair<String,String>> wikiEntities ;
+	private static TreeMap<String, Pair<String,String>> wikiEntities ;
 
 	//lista delle mention con duplicati per analisi quantitativa
-	List<EntryMention> mentions;
+	private static List<EntryMention> mentions;
 
 	//lista delle frasi annotate con i mid di freebase
-	List<String> phrases;
+	private static List<String> phrases;
 
 
 	public WikiArticle(){
