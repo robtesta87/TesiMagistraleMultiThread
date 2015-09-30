@@ -12,51 +12,20 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.compress.compressors.CompressorException;
 import org.apache.commons.compress.compressors.CompressorInputStream;
 import org.apache.commons.compress.compressors.CompressorStreamFactory;
-
 import bean.WikiArticle;
-import edu.stanford.nlp.ie.AbstractSequenceClassifier;
-import edu.stanford.nlp.ie.crf.CRFClassifier;
-import edu.stanford.nlp.ling.CoreLabel;
-import edu.stanford.nlp.util.Pair;
 import Configuration.Configuration;
-import ExtractorMentions.ExtractorMentions;
 
 public class ParseWikiExtractor {
-	private static BlockingQueue<bean.WikiArticle> queue;
-	private static int maxSizeQueue = 500;
 	private static int cores =Runtime.getRuntime().availableProcessors()*2;
-
-
-	
-
-	public static void addWikiArticle(bean.WikiArticle wikiArticle){
-		try {
-			queue.put(wikiArticle);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-	}
-
-
 
 	public static BufferedReader getBufferedReaderForCompressedFile(String fileIn) throws FileNotFoundException, CompressorException {
 		FileInputStream fin = new FileInputStream(fileIn);
@@ -70,7 +39,7 @@ public class ParseWikiExtractor {
 
 
 	public static void main(String[] args) throws FileNotFoundException, CompressorException {
-		queue = new LinkedBlockingQueue<bean.WikiArticle>(maxSizeQueue);
+		ConcurrentLinkedQueue<WikiArticle> queue = new ConcurrentLinkedQueue<WikiArticle>();
 		Configuration config = Configuration.instance();
 		String version = config.version;
 		/*
@@ -83,7 +52,7 @@ public class ParseWikiExtractor {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		*/
+		 */
 		System.out.println("Versione selezionata: "+config.version);
 		File dir = new File(config.segmentWikiExtractorPath);
 		File[] directoryListing = dir.listFiles();
@@ -120,57 +89,59 @@ public class ParseWikiExtractor {
 						titleWikiArticle = titleText[0];
 						textWikiArticle = titleText[1].split("</doc>")[0];
 
-						bean.WikiArticle wikiArticle = new bean.WikiArticle();
-						TreeMap<String, Pair<String,String>> treemap = null;
+						WikiArticle wikiArticle = new WikiArticle();
 						wikiArticle.setText(textWikiArticle);
 						wikiArticle.setTitle(titleWikiArticle);
 						wikiArticle.setWikid(titleWikiArticle.replaceAll(" ","_"));
-						addWikiArticle(wikiArticle);
-						if (queue.size()==maxSizeQueue){
-							System.out.println("OK!");
-							int queueSize = queue.size();
-							
-							CountDownLatch latch = new CountDownLatch(cores);
-							Date start = new Date();
-							ExecutorService executor = Executors.newFixedThreadPool(cores);
-							
-							SearcherMid searcherMid;
-							try {
-								searcherMid = new SearcherMid();
-							
-							for(int i=0; i < cores; i++) {
-								executor.submit(new Consumer(latch,queue,version,searcherMid));
-							}
-							} catch (IOException e1) {
-								// TODO Auto-generated catch block
-								e1.printStackTrace();
-							}
+						queue.add(wikiArticle);
+						
 
-							try {
-								latch.await();
-							} catch (InterruptedException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-							Date end = new Date();
-							//System.out.println("Tempo di esecuzione in ms: "+(end.getTime()-start.getTime()));
-							PrintWriter outDate=null;
-							try {
-								outDate = new PrintWriter(new BufferedWriter(new FileWriter("/home/roberto/Scrivania/tempo.txt", true)));
-								outDate.println("Tempo di esecuzione in ms ("+cores+" thread, "+queueSize+" articoli): "+(end.getTime()-start.getTime()));
-							} catch (IOException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-							outDate.close();
-							executor.shutdown();
-
-							System.out.println("Completed.");
-						}
 					}
 				}
 
 			}
+			
+
+			System.out.println("OK!");
+			int queueSize = queue.size();
+
+			CountDownLatch latch = new CountDownLatch(cores);
+			Date start = new Date();
+			ExecutorService executor = Executors.newFixedThreadPool(cores);
+
+			SearcherMid searcherMid = null;
+			try {
+				searcherMid = new SearcherMid();
+
+				for(int i=0; i < cores; i++) {
+					executor.submit(new Consumer(latch,queue,version,searcherMid));
+				}
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+
+			try {
+				latch.await();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			Date end = new Date();
+			//System.out.println("Tempo di esecuzione in ms: "+(end.getTime()-start.getTime()));
+			PrintWriter outDate=null;
+			try {
+				outDate = new PrintWriter(new BufferedWriter(new FileWriter("/home/roberto/Scrivania/tempo.txt", true)));
+				outDate.println("Tempo di esecuzione in ms ("+cores+" thread, "+queueSize+" articoli): "+(end.getTime()-start.getTime()));
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			outDate.close();
+			executor.shutdown();
+
+			System.out.println("Completed.");
+
 		}
 	}
 }

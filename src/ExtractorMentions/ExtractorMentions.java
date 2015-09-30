@@ -12,7 +12,6 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import Configuration.Configuration;
 import CutterText.CutterText;
 import bean.WikiArticle;
 import edu.stanford.nlp.ie.AbstractSequenceClassifier;
@@ -21,7 +20,7 @@ import edu.stanford.nlp.util.Pair;
 
 public class ExtractorMentions {
 	final static String mentionRegex = "\\[\\[[\\w+\\s#\\|\\(\\)_-]*\\]\\]";
-	final static String boldRegex = "'''[\\w+\\s]*'''";
+	final static String boldRegex = "\"'[\\w+\\s]*\"'";
 
 	public static <K, V extends Comparable<V>> Map<K, V> sortByValues(final Map<K, V> map) {
 		Comparator<K> valueComparator = 
@@ -141,7 +140,7 @@ public class ExtractorMentions {
 			}
 
 		}	
-
+/*
 		//rilevamento mention dalle parole in grassetto
 		pattern = Pattern.compile(boldRegex);
 		if (text.length()>300)
@@ -152,7 +151,7 @@ public class ExtractorMentions {
 			String mentionString = matcher.group();
 			String stringCleaned = mentionString.substring(3, mentionString.length()-3);
 			wikiArticle.addMention(stringCleaned, wikiArticle.getWikid());
-		}	
+		}	*/
 
 		wikiArticle.setText(text);
 	}	
@@ -272,7 +271,6 @@ public class ExtractorMentions {
 	public TreeMap<String, Pair<String,String>> getMid(WikiArticle wikiArticle, AbstractSequenceClassifier<CoreLabel> classifier, Version version,SearcherMid searcherMid) throws IOException, ClassCastException, ClassNotFoundException{
 		String title = wikiArticle.getTitle();
 		String text = wikiArticle.getText();
-
 		
 		EntityDetect ed = new EntityDetect();
 		SentenceDetect sd = new SentenceDetect();
@@ -281,9 +279,8 @@ public class ExtractorMentions {
 		
 		switch (version) {
 		case Base:
-			
 			extractMentions(text, wikiArticle);
-			//wikiArticle.updateMid(searcherMid);
+			wikiArticle.updateMid(searcherMid);
 						
 			//phrases = sd.getSentences(text);
 			//wikiArticle.setPhrases(phrases);

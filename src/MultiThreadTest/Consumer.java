@@ -11,6 +11,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.TreeMap;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 
 import edu.stanford.nlp.ie.AbstractSequenceClassifier;
@@ -24,11 +25,11 @@ import bean.WikiArticle;
 
 class Consumer implements Runnable {
 	private CountDownLatch latch;
-	private BlockingQueue<bean.WikiArticle> queue;
+	private  ConcurrentLinkedQueue<bean.WikiArticle> queue;
 	private String version;
 	private SearcherMid searcherMid;
 
-	public Consumer(CountDownLatch latch, BlockingQueue<bean.WikiArticle> queue,String version,SearcherMid searcherMid) {
+	public Consumer(CountDownLatch latch,  ConcurrentLinkedQueue<bean.WikiArticle> queue,String version,SearcherMid searcherMid) {
 		this.latch = latch;
 		this.queue = queue;
 		this.version = version;
@@ -43,37 +44,37 @@ class Consumer implements Runnable {
 		String serializedClassifier = config.classificatore;
 		List<String> list = new ArrayList<String>();
 		AbstractSequenceClassifier<CoreLabel> classifier = null;
-		/*
+					
+		String value;
+		WikiArticle wikiArticle = null;
+		TreeMap<String, Pair<String,String>> treemap = null;
+		ExtractorMentions extractor = new ExtractorMentions();
 		try {
 			classifier = CRFClassifier.getClassifier(serializedClassifier);
 		} catch (ClassCastException | ClassNotFoundException | IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		*/
-		String value;
-		WikiArticle wikiArticle = null;
-		TreeMap<String, Pair<String,String>> treemap = null;
-		ExtractorMentions extractor = new ExtractorMentions();
+		
 		while ((wikiArticle = queue.poll()) != null){
+		
 			try {
 				switch (version) {
 				case "Base":
-					//System.out.println("thread: "+Thread.currentThread().getName()+" articolo: "+wikiArticle.getTitle());
 					//treemap = extractor.getMidModulate(wikiArticle,null, Version.Base,searcherMid);
-					//treemap = extractor.getMid(wikiArticle,classifier, Version.Base,searcherMid);
-					for (int i = 0; i < 10000; i++) {
-						//wikiArticle.addMention(wikiArticle.getTitle()+" "+i);
-						list.add(" "+i);
+					synchronized (searcherMid) {
+						treemap = extractor.getMid(wikiArticle,classifier, Version.Base,searcherMid);
 					}
 					break;
 				case "Intermedia":
+					System.out.println(wikiArticle);
 					//treemap = extractor.getMidModulate(wikiArticle, null, Version.Intermedia,searcherMid);
-					synchronized(classifier){
+					synchronized(searcherMid){
 						treemap = extractor.getMid(wikiArticle, classifier, Version.Intermedia,searcherMid);
 					}
 					break;
 				case "Completa":
+					
 					//treemap = extractor.getMidModulate(wikiArticle, null, Version.Completa,searcherMid);
 					treemap = extractor.getMid(wikiArticle, classifier, Version.Completa,searcherMid);
 					break;
@@ -86,13 +87,7 @@ class Consumer implements Runnable {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-
-			/*try {
-				Thread.sleep(10);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}	*/		
+	
 		}
 
 		latch.countDown();

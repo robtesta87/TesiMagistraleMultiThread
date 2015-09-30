@@ -17,21 +17,28 @@ import edu.stanford.nlp.util.Pair;
 
 public class WikiArticle{
 	//
-	private static String title;
-	private static String wikid;
+	private String title;
+	private String wikid;
 
-	private static String text;
+	private String text;
 
 	// testo--->wikid,mid
-	private static TreeMap<String, Pair<String,String>> wikiEntities ;
+	private TreeMap<String, Pair<String,String>> wikiEntities ;
 
 	//lista delle mention con duplicati per analisi quantitativa
-	private static List<EntryMention> mentions;
+	private List<EntryMention> mentions;
 
 	//lista delle frasi annotate con i mid di freebase
-	private static List<String> phrases;
+	private List<String> phrases;
 
-
+	public WikiArticle(String title, String wikid, String text){
+		this.title = title;
+		this.wikid = wikid;
+		this.text = text;
+		this.wikiEntities = new TreeMap<String, Pair<String,String>>();
+		this.mentions = new ArrayList<EntryMention>();
+		this.phrases = null;
+	}
 	public WikiArticle(){
 		this.wikiEntities = new TreeMap<String, Pair<String,String>>();
 		this.mentions = new ArrayList<EntryMention>();
@@ -181,6 +188,46 @@ public class WikiArticle{
 		this.phrases = phrases;
 	}
 
+	@Override
+	public String toString() {
+		return "WikiArticle [title=" + title + ", wikid=" + wikid + "]";
+	}
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((text == null) ? 0 : text.hashCode());
+		result = prime * result + ((title == null) ? 0 : title.hashCode());
+		result = prime * result + ((wikid == null) ? 0 : wikid.hashCode());
+		return result;
+	}
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		WikiArticle other = (WikiArticle) obj;
+		if (text == null) {
+			if (other.text != null)
+				return false;
+		} else if (!text.equals(other.text))
+			return false;
+		if (title == null) {
+			if (other.title != null)
+				return false;
+		} else if (!title.equals(other.title))
+			return false;
+		if (wikid == null) {
+			if (other.wikid != null)
+				return false;
+		} else if (!wikid.equals(other.wikid))
+			return false;
+		return true;
+	}
 
+	
 
 }

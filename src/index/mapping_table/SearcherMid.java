@@ -39,7 +39,7 @@ public class SearcherMid {
 		parser = new QueryParser(Version.LUCENE_47, Field, analyzer);
 	}
 
-	public synchronized EntryMappedBean getMid(String wikid) throws IOException, UnsupportedEncodingException {
+	public EntryMappedBean getMid(String wikid) throws IOException, UnsupportedEncodingException {
 		EntryMappedBean entryMid =null;
 		List<EntryMappedBean> mappingResults = new ArrayList<EntryMappedBean>();
 		int maxHits = 10;

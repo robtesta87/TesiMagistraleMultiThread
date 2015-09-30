@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -45,20 +46,15 @@ public class ParseDumpWiki {
 	static  class DemoArticleFilter implements IArticleFilter {
 
 		private static int cont;
-		private BlockingQueue<bean.WikiArticle> queue;
+		private ConcurrentLinkedQueue<bean.WikiArticle> queue;
 		private static String version;
 
 		public DemoArticleFilter() {
-			this.queue = new LinkedBlockingQueue<bean.WikiArticle>(10);
+			this.queue =new ConcurrentLinkedQueue<bean.WikiArticle>();
 		}
 
 		public void addWikiArticle(bean.WikiArticle wikiArticle){
-			try {
-				this.queue.put(wikiArticle);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			this.queue.add(wikiArticle);
 		}
 
 		public int getCiont(){
