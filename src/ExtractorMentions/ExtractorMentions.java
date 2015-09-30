@@ -290,20 +290,20 @@ public class ExtractorMentions {
 			wikiArticle.setPhrases(phrases);
 			break;
 		case Intermedia:
-			e.extractMentionsRefactoring(text, wikiArticle);
-			//wikiArticle.updateMid(searcherMid);
+			e.extractMentions(text, wikiArticle);
+			wikiArticle.updateMid(searcherMid);
 						
 			phrases = sd.getSentences(text);
 			
 			//mappa di tutte le entità riconosciute dal NER con duplicati
 			entitiesMap = ed.getEntitiesFromPhrasesListMap(phrases, classifier);
 			
-			//e.addPerson(entitiesMap.get("PERSON"), wikiArticle);
+			e.addPerson(entitiesMap.get("PERSON"), wikiArticle);
 			
 			//controllo se nelle entità ci sono dei match esatti nelle mention originali per il controllo quantitativo
-			//e.addEntity(entitiesMap.get("ORGANIZATION"), wikiArticle);
-			//e.addEntity(entitiesMap.get("MISC"), wikiArticle);
-			//e.addEntity(entitiesMap.get("LOCATION"), wikiArticle);
+			e.addEntity(entitiesMap.get("ORGANIZATION"), wikiArticle);
+			e.addEntity(entitiesMap.get("MISC"), wikiArticle);
+			e.addEntity(entitiesMap.get("LOCATION"), wikiArticle);
 			
 			
 			wikiArticle.setPhrases(phrases);
