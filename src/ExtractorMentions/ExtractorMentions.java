@@ -3,7 +3,6 @@ package ExtractorMentions;
 import index.mapping_table.SearcherMid;
 import info.bliki.wiki.filter.PlainTextConverter;
 import info.bliki.wiki.model.WikiModel;
-
 import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
@@ -11,7 +10,6 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import CutterText.CutterText;
 import bean.WikiArticle;
 import edu.stanford.nlp.ie.AbstractSequenceClassifier;
@@ -149,7 +147,6 @@ public class ExtractorMentions {
 			matcher = pattern.matcher(text.substring(0, text.length()-1));
 		while(matcher.find()){
 			String mentionString = matcher.group();
-			System.out.println("bold: "+mentionString);
 			String stringCleaned = mentionString.substring(2, mentionString.length()-2);
 			wikiArticle.addMention(stringCleaned, wikiArticle.getWikid());
 		}	
@@ -211,7 +208,6 @@ public class ExtractorMentions {
 	}
 	
 	public TreeMap<String, Pair<String,String>> getMidModulate (WikiArticle wikiArticle, AbstractSequenceClassifier<CoreLabel> classifier, Version version,SearcherMid searcherMid) throws IOException, ClassCastException, ClassNotFoundException{
-		String title = wikiArticle.getTitle();
 		String text = wikiArticle.getText();
 
 		CutterText cutterText = new CutterText();
@@ -270,7 +266,6 @@ public class ExtractorMentions {
 	}
 	
 	public TreeMap<String, Pair<String,String>> getMid(WikiArticle wikiArticle, AbstractSequenceClassifier<CoreLabel> classifier, Version version,SearcherMid searcherMid) throws IOException, ClassCastException, ClassNotFoundException{
-		String title = wikiArticle.getTitle();
 		String text = wikiArticle.getText();
 		
 		EntityDetect ed = new EntityDetect();
@@ -301,8 +296,7 @@ public class ExtractorMentions {
 			addEntity(entitiesMap.get("ORGANIZATION"), wikiArticle);
 			addEntity(entitiesMap.get("MISC"), wikiArticle);
 			addEntity(entitiesMap.get("LOCATION"), wikiArticle);
-			
-			
+						
 			wikiArticle.setPhrases(phrases);
 			break;
 		case Completa:
@@ -320,9 +314,7 @@ public class ExtractorMentions {
 			addEntity(entitiesMap.get("ORGANIZATION"), wikiArticle);
 			addEntity(entitiesMap.get("MISC"), wikiArticle);
 			addEntity(entitiesMap.get("LOCATION"), wikiArticle);
-			
-			
-			
+						
 			wikiArticle.setPhrases(phrases);
 			break;
 

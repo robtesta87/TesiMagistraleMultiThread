@@ -21,7 +21,7 @@ public class EntityDetect {
 
 
 
-	public static Map<String,List<String>> getEntitiesFromPhrasesListMap(List<String> phrases, AbstractSequenceClassifier<CoreLabel> classifier){
+	public  Map<String,List<String>> getEntitiesFromPhrasesListMap(List<String> phrases, AbstractSequenceClassifier<CoreLabel> classifier){
 
 		List<String> person = new ArrayList<String>();
 		List<String> misc = new ArrayList<String>();
