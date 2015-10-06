@@ -36,12 +36,75 @@ public class WikiArticle{
 	}
 	
 	/**
+	 * @return the wikid
+	 */
+	public String getWikid() {
+		return wikid;
+	}
+
+	/**
+	 * @param wikid the wikid to set
+	 */
+	public void setWikid(String wikid) {
+		this.wikid = wikid;
+	}
+
+	/**
+	 * @return the title
+	 */
+	public String getTitle() {
+		return title;
+	}
+
+	/**
+	 * @param title the title to set
+	 */
+	public void setTitle(String title) {
+		this.title = title;
+	}
+
+	/**
+	 * @return the text
+	 */
+	public String getText() {
+		return text;
+	}
+
+	/**
+	 * @param text the text to set
+	 */
+	public void setText(String text) {
+		this.text = text;
+	}
+
+	/**
+	 * @return the mentions
+	 */
+	public TreeMap<String, Pair<String, String>> getMentions() {
+		return mentions;
+	}
+
+	/**
+	 * @return the phrases
+	 */
+	public List<String> getPhrases() {
+		return phrases;
+	}
+
+	/**
+	 * @param phrases the phrases to set
+	 */
+	public void setPhrases(List<String> phrases) {
+		this.phrases = phrases;
+	}
+
+	/**
 	 * 
 	 * @param text
 	 */
 	public void addMention(String text){
 		String wikifiedText = text.replaceAll(" ", "_");
-		Pair<String, String> pair_ids = new Pair<String,String>(wikifiedText, null);
+		Pair<String, String> pair_ids = new Pair<String,String>(wikifiedText, "null");
 		this.mentions.put(text, pair_ids);
 	}
 	
@@ -51,7 +114,7 @@ public class WikiArticle{
 	 * @param wikid
 	 */
 	public void addMention(String text, String wikid){
-		Pair<String, String> pair_ids = new Pair<String,String>(wikid, null);
+		Pair<String, String> pair_ids = new Pair<String,String>(wikid, "null");
 		this.mentions.put(text, pair_ids);
 	}
 	
@@ -65,35 +128,6 @@ public class WikiArticle{
 		Pair<String, String> pair_ids = new Pair<String, String>(wikid, mid);
 		this.mentions.put(text, pair_ids);
 	}
-
-	/* to delete: it is not a wikiarticle method
-	public void updateMid (SearcherMid searcherMid){
-		Iterator<String> keyIterator = this.wikiEntities.keySet().iterator();
-		String currentEntity = null;
-		Pair pair = null;
-		String wikid = null; 
-		EntryMappedBean mappingBean = null;
-		while(keyIterator.hasNext()){
-			currentEntity = keyIterator.next();
-			pair = this.wikiEntities.get(currentEntity);
-			wikid = (String) pair.first;
-
-			try {
-				mappingBean = searcherMid.getMid(wikid);
-				//mappingBean = searcherMid.getMid(wikid);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				System.out.println("errore");
-				e.printStackTrace();
-			}
-			String mid="";
-			if (mappingBean!=null){
-				mid= mappingBean.getMid();
-				pair.setSecond(mid);
-			}
-		}
-	}
-	*/
 
 
 	@Override

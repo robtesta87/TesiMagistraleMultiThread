@@ -24,12 +24,17 @@ class ConsumerBase extends Consumer {
 	public void run() {
 		WikiArticle current_article = null;
 		
+		
 		while ((current_article = input_buffer.poll()) != null){
+			//System.out.println(current_article.getText());
+			
+			extractMentions(current_article);
+			
+			//updateMid(current_article);
 			
 			//... lavora wikiarticle... //
 			
 			output_buffer.add(current_article);
-			
 		}
 		
 		latch.countDown();

@@ -1,9 +1,9 @@
 package util;
 
 public final class Pair<A, B> {
-	private final A key;
-	private final B value;
-	private final int hashcode;
+	private A key;
+	private B value;
+	private int hashcode;
 
 	public Pair(A a, B b) { 
 		this.key = a; 
@@ -42,7 +42,19 @@ public final class Pair<A, B> {
 	public B getValue() {
 		return value;
 	}
-	
-	
-	
+
+	/**
+	 * @param key the key to set
+	 */
+	public void setKey(A key) {
+		this.key = key;
+	}
+
+	/**
+	 * @param value the value to set
+	 */
+	public void setValue(B value) {
+		this.value = value;
+	}
+
 }

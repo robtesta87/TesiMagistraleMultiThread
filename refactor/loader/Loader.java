@@ -55,7 +55,6 @@ public class Loader {
 	public List<WikiArticle> getArticles() throws FileNotFoundException, CompressorException{
 		List<WikiArticle> articles = new ArrayList<WikiArticle>();
 
-
 		File dir = new File(file2load);
 		File[] directoryListing = dir.listFiles();
 		String text = null;
@@ -94,14 +93,6 @@ public class Loader {
 			System.out.println("OK!");
 		
 		}
-
-
-
-
-
-
-
-
 		return articles;
 	}
 

@@ -1,6 +1,7 @@
 package multithread;
 
 import java.io.FileNotFoundException;
+import java.util.Date;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
@@ -41,7 +42,7 @@ public class Producer {
 		System.out.println("Freebase_searcher: "+config.getFreebase_searcher());
 
 		// input_buffer
-		Queue<WikiArticle> input_buffer = null;;
+		Queue<WikiArticle> input_buffer = null;
 		try {
 			input_buffer = new ConcurrentLinkedQueue<WikiArticle>(loader.getArticles());
 		} catch (FileNotFoundException | CompressorException e) {
@@ -58,7 +59,8 @@ public class Producer {
 		CountDownLatch latch = new CountDownLatch(threads);
 
 		System.out.println("Inizio processo. Output Buffer Size:\t" + output_buffer.size());
-
+		
+		Date start = new Date();
 		// a seconda della versione, scegli il consumer adatto
 		switch(config.getVersion()){
 		case Base:
@@ -83,6 +85,8 @@ public class Producer {
 
 		System.out.println("Processo finito. Output Buffer Size:\t" + output_buffer.size());
 
+		Date end = new Date();
+		System.out.println("Tempo di esecuzione in ms: "+(end.getTime()-start.getTime()));
 	}
 
 
