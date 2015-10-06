@@ -1,6 +1,7 @@
 package MultiThreadTest;
 
 import index.mapping_table.SearcherMid;
+import index.redirect.SearcherRedirect;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -17,18 +18,21 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
 import edu.stanford.nlp.ie.AbstractSequenceClassifier;
 import edu.stanford.nlp.ie.crf.CRFClassifier;
 import edu.stanford.nlp.ling.CoreLabel;
+
 import org.apache.commons.compress.compressors.CompressorException;
 import org.apache.commons.compress.compressors.CompressorInputStream;
 import org.apache.commons.compress.compressors.CompressorStreamFactory;
-import bean.WikiArticle;
+
+import bean.WikiArticleOld;
 import Configuration.Configuration;
 
 public class ParseWikiExtractor {
 
-	private static int cores =Runtime.getRuntime().availableProcessors()*2;
+	private static int cores =Runtime.getRuntime().availableProcessors()/2;
 
 	public static BufferedReader getBufferedReaderForCompressedFile(String fileIn) throws FileNotFoundException, CompressorException {
 		FileInputStream fin = new FileInputStream(fileIn);
@@ -39,17 +43,19 @@ public class ParseWikiExtractor {
 	}	
 
 	public static void main(String[] args) throws FileNotFoundException, CompressorException {
-		ConcurrentLinkedQueue<WikiArticle> queue = new ConcurrentLinkedQueue<WikiArticle>();
+		ConcurrentLinkedQueue<WikiArticleOld> queue = new ConcurrentLinkedQueue<WikiArticleOld>();
 		Configuration config = Configuration.instance();
 		String version = config.version;
 		//avvio del classificatore del ner
 		String serializedClassifier = config.classificatore;
 		AbstractSequenceClassifier<CoreLabel> classifier = null;
+		
 		try {
 			classifier = CRFClassifier.getClassifier(serializedClassifier);
 		} catch (ClassCastException | ClassNotFoundException | IOException e1) {
 			e1.printStackTrace();
 		}
+		
 		System.out.println("Versione selezionata: "+config.version);
 		File dir = new File(config.segmentWikiExtractorPath);
 		File[] directoryListing = dir.listFiles();
@@ -81,7 +87,7 @@ public class ParseWikiExtractor {
 						titleText = docSplitted[1].split("\">");
 						titleWikiArticle = titleText[0];
 						textWikiArticle = titleText[1].split("</doc>")[0];
-						WikiArticle wikiArticle = new WikiArticle();
+						WikiArticleOld wikiArticle = new WikiArticleOld();
 						wikiArticle.setText(textWikiArticle);
 						wikiArticle.setTitle(titleWikiArticle);
 						wikiArticle.setWikid(titleWikiArticle.replaceAll(" ","_"));
@@ -95,10 +101,12 @@ public class ParseWikiExtractor {
 			Date start = new Date();
 			ExecutorService executor = Executors.newFixedThreadPool(cores);
 			SearcherMid searcherMid = null;
+			SearcherRedirect searcherRedirect = null;
 			try {
 				searcherMid = new SearcherMid();
+				searcherRedirect = new SearcherRedirect();
 				for(int i=0; i < cores; i++) {
-					executor.submit(new Consumer(latch,queue,version,searcherMid,classifier));
+					executor.submit(new Consumer(latch,queue,version,searcherMid,searcherRedirect,classifier));
 				}
 			} catch (IOException e1) {
 				e1.printStackTrace();

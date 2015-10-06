@@ -34,6 +34,8 @@ public class EntityDetect {
 				List<Triple<String,Integer,Integer>> triples = classifier.classifyToCharacterOffsets(currentPhrase);
 				for (Triple<String,Integer,Integer> trip : triples) {
 					String text = currentPhrase.substring(trip.second(), trip.third());
+					//if (text.contains("|"))
+					//	System.out.println("entità non riconosciuta: "+text);
 					switch (trip.first) {
 					case "PERSON":
 						person.add(text);

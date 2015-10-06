@@ -15,7 +15,7 @@ import org.apache.lucene.search.Query;
 
 import edu.stanford.nlp.util.Pair;
 
-public class WikiArticle{
+public class WikiArticleOld{
 	//
 	private String title;
 	private String wikid;
@@ -31,7 +31,7 @@ public class WikiArticle{
 	//lista delle frasi annotate con i mid di freebase
 	private List<String> phrases;
 
-	public WikiArticle(String title, String wikid, String text){
+	public WikiArticleOld(String title, String wikid, String text){
 		this.title = title;
 		this.wikid = wikid;
 		this.text = text;
@@ -39,7 +39,7 @@ public class WikiArticle{
 		this.mentions = new ArrayList<EntryMention>();
 		this.phrases = null;
 	}
-	public WikiArticle(){
+	public WikiArticleOld(){
 		this.wikiEntities = new TreeMap<String, Pair<String,String>>();
 		this.mentions = new ArrayList<EntryMention>();
 		this.phrases = null;
@@ -209,7 +209,7 @@ public class WikiArticle{
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		WikiArticle other = (WikiArticle) obj;
+		WikiArticleOld other = (WikiArticleOld) obj;
 		if (text == null) {
 			if (other.text != null)
 				return false;

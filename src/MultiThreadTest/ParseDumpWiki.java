@@ -46,14 +46,14 @@ public class ParseDumpWiki {
 	static  class DemoArticleFilter implements IArticleFilter {
 
 		private static int cont;
-		private ConcurrentLinkedQueue<bean.WikiArticle> queue;
+		private ConcurrentLinkedQueue<bean.WikiArticleOld> queue;
 		private static String version;
 
 		public DemoArticleFilter() {
-			this.queue =new ConcurrentLinkedQueue<bean.WikiArticle>();
+			this.queue =new ConcurrentLinkedQueue<bean.WikiArticleOld>();
 		}
 
-		public void addWikiArticle(bean.WikiArticle wikiArticle){
+		public void addWikiArticle(bean.WikiArticleOld wikiArticle){
 			this.queue.add(wikiArticle);
 		}
 
@@ -78,7 +78,7 @@ public class ParseDumpWiki {
 			String text = page.getText();
 
 			if (!(title.contains("List of"))&&!(text.contains("#REDIRECT"))&&!((text.contains("#redirect")))){
-				bean.WikiArticle wikiArticle = new bean.WikiArticle();
+				bean.WikiArticleOld wikiArticle = new bean.WikiArticleOld();
 				wikiArticle.setText(text);
 				wikiArticle.setTitle(title);
 				wikiArticle.setWikid(title.replaceAll(" ","_"));
@@ -97,7 +97,7 @@ public class ParseDumpWiki {
 					searcherMid = new SearcherMid();
 				
 				for(int i=0; i < cores; i++) {
-					executor.submit(new Consumer(latch,queue,version,searcherMid));
+					executor.submit(new Consumer(latch,queue,version,searcherMid,null,null));
 				}
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block

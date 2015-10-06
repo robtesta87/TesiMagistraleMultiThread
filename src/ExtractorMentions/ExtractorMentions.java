@@ -1,8 +1,10 @@
 package ExtractorMentions;
 
 import index.mapping_table.SearcherMid;
+import index.redirect.SearcherRedirect;
 import info.bliki.wiki.filter.PlainTextConverter;
 import info.bliki.wiki.model.WikiModel;
+
 import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
@@ -10,15 +12,17 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import CutterText.CutterText;
-import bean.WikiArticle;
+import bean.EntryRedirect;
+import bean.WikiArticleOld;
 import edu.stanford.nlp.ie.AbstractSequenceClassifier;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.util.Pair;
 
 public class ExtractorMentions {
-	final static String mentionRegex = "\\[\\[[\\w+\\s#\\|\\(\\)_-]*\\]\\]";
-	final static String boldRegex = "\"'[\\w+\\s]*\"'";
+	final static String mentionRegex = "\\[\\[[\\w+\\sÉé?!#,\"'.îóçë&–üáà:°í#ἀνã\\|\\(\\)_-]*\\]\\]";
+	final static String boldRegex = "\"'[\\w+\\s\"]*\"'";
 
 	public static <K, V extends Comparable<V>> Map<K, V> sortByValues(final Map<K, V> map) {
 		Comparator<K> valueComparator = 
@@ -42,7 +46,7 @@ public class ExtractorMentions {
 		Intermedia,
 		Completa;
 	}
-	public static void extractMentionsRefactoring (String text, WikiArticle wikiArticle){
+	public static void extractMentionsRefactoring (String text, WikiArticleOld wikiArticle){
 
 		wikiArticle.addMention(wikiArticle.getTitle());
 		Pattern pattern = Pattern.compile(mentionRegex);
@@ -96,7 +100,7 @@ public class ExtractorMentions {
 		wikiArticle.setText(text);
 	}
 	
-	public  void extractMentions (String text, WikiArticle wikiArticle){
+	public  void extractMentions (String text, WikiArticleOld wikiArticle){
 
 		wikiArticle.addMention(wikiArticle.getTitle());
 		Pattern pattern = Pattern.compile(mentionRegex);
@@ -104,6 +108,7 @@ public class ExtractorMentions {
 		while(matcher.find()){
 			String mentionString = matcher.group();
 			String stringCleaned = mentionString.substring(2, mentionString.length()-2);
+
 			if(stringCleaned.contains("|")){
 				String[] splitted = stringCleaned.split("\\|");
 				//primo campo: text secondo campo: wikiid
@@ -150,9 +155,9 @@ public class ExtractorMentions {
 			String stringCleaned = mentionString.substring(2, mentionString.length()-2);
 			wikiArticle.addMention(stringCleaned, wikiArticle.getWikid());
 		}	
-
 		wikiArticle.setText(text);
-	}	
+	}
+	
 	public static String CleanText (String text){
 		//pulizia testo
 		WikiModel wikiModel = new WikiModel("http://www.mywiki.com/wiki/${image}", "http://www.mywiki.com/wiki/${title}");
@@ -160,7 +165,7 @@ public class ExtractorMentions {
 		return text;
 	}
 	
-	public void addPerson(List<String> entities, WikiArticle wikiArticle){
+	public void addPerson(List<String> entities, WikiArticleOld wikiArticle){
 		String currentEntity= null;
 		TreeMap<String, Pair<String,String>> treemap = null;
 
@@ -193,7 +198,7 @@ public class ExtractorMentions {
 		}
 	}
 	
-	public void addEntity(List<String> entities, WikiArticle wikiArticle){
+	public void addEntity(List<String> entities, WikiArticleOld wikiArticle){
 		String currentEntity= null;
 		TreeMap<String, Pair<String,String>> treemap = wikiArticle.getWikiEntities();
 
@@ -207,7 +212,27 @@ public class ExtractorMentions {
 
 	}
 	
-	public TreeMap<String, Pair<String,String>> getMidModulate (WikiArticle wikiArticle, AbstractSequenceClassifier<CoreLabel> classifier, Version version,SearcherMid searcherMid) throws IOException, ClassCastException, ClassNotFoundException{
+	public void addRedirect (List<String> entities, WikiArticleOld wikiArticle,SearcherRedirect searcherRedirect){
+		TreeMap<String, Pair<String,String>> treemap = wikiArticle.getWikiEntities();
+		for (int i = 0; i < entities.size(); i++) {
+			String currentEntity = entities.get(i);
+			if (!treemap.containsKey(currentEntity)){
+				EntryRedirect mappingBean = null;
+				try {
+					mappingBean = searcherRedirect.getRedirect(currentEntity);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				if (mappingBean!=null){
+					wikiArticle.addMention(currentEntity, mappingBean.getWikid());
+				}
+				
+			}
+		}
+	}
+	
+	public TreeMap<String, Pair<String,String>> getMidModulate (WikiArticleOld wikiArticle, AbstractSequenceClassifier<CoreLabel> classifier, Version version,SearcherMid searcherMid) throws IOException, ClassCastException, ClassNotFoundException{
 		String text = wikiArticle.getText();
 
 		CutterText cutterText = new CutterText();
@@ -265,9 +290,8 @@ public class ExtractorMentions {
 		return wikiArticle.getWikiEntities();
 	}
 	
-	public TreeMap<String, Pair<String,String>> getMid(WikiArticle wikiArticle, AbstractSequenceClassifier<CoreLabel> classifier, Version version,SearcherMid searcherMid) throws IOException, ClassCastException, ClassNotFoundException{
+	public TreeMap<String, Pair<String,String>> getMid(WikiArticleOld wikiArticle, AbstractSequenceClassifier<CoreLabel> classifier, Version version,SearcherMid searcherMid, SearcherRedirect searcherRedirect) throws IOException, ClassCastException, ClassNotFoundException{
 		String text = wikiArticle.getText();
-		
 		EntityDetect ed = new EntityDetect();
 		SentenceDetect sd = new SentenceDetect();
 		List<String> phrases = null;
@@ -278,14 +302,14 @@ public class ExtractorMentions {
 			extractMentions(text, wikiArticle);
 			wikiArticle.updateMid(searcherMid);
 						
-			//phrases = sd.getSentences(text);
+			//phrases = sd.getSentences(wikiArticle.getText());
 			//wikiArticle.setPhrases(phrases);
 			break;
 		case Intermedia:
 			extractMentions(text, wikiArticle);
 			wikiArticle.updateMid(searcherMid);
 						
-			phrases = sd.getSentences(text);
+			phrases = sd.getSentences(wikiArticle.getText());
 			
 			//mappa di tutte le entità riconosciute dal NER con duplicati
 			entitiesMap = ed.getEntitiesFromPhrasesListMap(phrases, classifier);
@@ -300,10 +324,11 @@ public class ExtractorMentions {
 			wikiArticle.setPhrases(phrases);
 			break;
 		case Completa:
-			extractMentionsRefactoring(text, wikiArticle);
+			System.out.println(wikiArticle.toString());
+			extractMentions(text, wikiArticle);
 			wikiArticle.updateMid(searcherMid);
 						
-			phrases = sd.getSentences(text);
+			phrases = sd.getSentences(wikiArticle.getText());
 			
 			//mappa di tutte le entità riconosciute dal NER con duplicati
 			entitiesMap = ed.getEntitiesFromPhrasesListMap(phrases, classifier);
@@ -314,7 +339,12 @@ public class ExtractorMentions {
 			addEntity(entitiesMap.get("ORGANIZATION"), wikiArticle);
 			addEntity(entitiesMap.get("MISC"), wikiArticle);
 			addEntity(entitiesMap.get("LOCATION"), wikiArticle);
-						
+			
+			addRedirect(entitiesMap.get("ORGANIZATION"), wikiArticle,searcherRedirect);
+			addRedirect(entitiesMap.get("MISC"), wikiArticle,searcherRedirect);
+			addRedirect(entitiesMap.get("LOCATION"), wikiArticle,searcherRedirect);
+			//wikiArticle.updateMid(searcherMid);
+			
 			wikiArticle.setPhrases(phrases);
 			break;
 
@@ -322,7 +352,4 @@ public class ExtractorMentions {
 		return wikiArticle.getWikiEntities();
 	}
 
-	public static void main(String[] args) {
-
-	}
 }
