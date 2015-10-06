@@ -88,10 +88,6 @@ public class Producer {
 		Date end = new Date();
 		System.out.println("Tempo di esecuzione in ms: "+(end.getTime()-start.getTime()));
 	}
-
-
-	
-	
 	
 	/**
 	 * Entry point.
@@ -109,9 +105,5 @@ public class Producer {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
-
-
 	}
-
 }

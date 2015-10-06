@@ -1,7 +1,11 @@
 package multithread;
 
 import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Queue;
 import java.util.TreeMap;
 import java.util.concurrent.CountDownLatch;
@@ -12,6 +16,9 @@ import org.apache.lucene.queryparser.classic.ParseException;
 
 import util.Pair;
 import bean.WikiArticle;
+import edu.stanford.nlp.ling.HasWord;
+import edu.stanford.nlp.ling.Sentence;
+import edu.stanford.nlp.process.DocumentPreprocessor;
 import freebase.FreebaseSearcher;
 
 abstract class Consumer implements Runnable {
@@ -194,5 +201,22 @@ abstract class Consumer implements Runnable {
 		}
 	}
 	
+	/**
+	 * metodo che restituisce, dato una stringa (testo), una lista di frasi
+	 * @param text
+	 * @return
+	 */
+	public static List<String> getSentences(String text){
+		Reader reader = new StringReader(text);
+		DocumentPreprocessor dp = new DocumentPreprocessor(reader);
+		List<String> sentenceList = new ArrayList<String>();
+		String sentenceString = null;
+		for (List<HasWord> sentence : dp) {
+			sentenceString = Sentence.listToString(sentence);
+			sentenceList.add(sentenceString.toString());
+		}
+		
+		return sentenceList;
+	}
 	
 }

@@ -55,7 +55,6 @@ public class FreebaseSearcher {
 			Query query = parser.parse(QueryParser.escape(wikid));
 			TopDocs results = searcher.search(query, maxHits);
 			ScoreDoc[] hits = results.scoreDocs;
-			System.out.println(hits.length);
 			if (hits.length > 0){
 				int docId = hits[0].doc;
 				Document d = searcher.doc(docId);
