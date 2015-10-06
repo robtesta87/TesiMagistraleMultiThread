@@ -47,25 +47,26 @@ public class FreebaseSearcher {
 	 * @throws ParseException 
 	 * @throws IOException 
 	 */
-	public Pair<String, String> getMid(String wikid) throws ParseException, IOException{
+	public  Pair<String, String> getMid(String wikid) throws ParseException, IOException{
 		Pair<String, String> result = new Pair<String, String>(null, null);
 		int maxHits = 1;
 		if (!wikid.equals("")){
-			System.out.println(wikid);
-			Query query = parser.parse(QueryParser.escape(wikid));
-			TopDocs results = searcher.search(query, maxHits);
-			ScoreDoc[] hits = results.scoreDocs;
+			ScoreDoc[] hits = null;
+			synchronized (searcher) {
+				Query query = parser.parse(QueryParser.escape(wikid));
+				TopDocs results = searcher.search(query, maxHits);
+				hits = results.scoreDocs;
+			}
 			if (hits.length > 0){
 				int docId = hits[0].doc;
 				Document d = searcher.doc(docId);
 				result = new Pair<String, String>(d.get("title"),  d.get("mid"));
-				System.out.println(d.get("mid"));
 			}
 		}else{
 			System.out.println("WikiID vuoto");
 		}
 		return result;
 	}
-	
-	
+
+
 }

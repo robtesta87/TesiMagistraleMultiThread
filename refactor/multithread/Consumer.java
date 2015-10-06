@@ -4,8 +4,10 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.TreeMap;
 import java.util.concurrent.CountDownLatch;
@@ -16,9 +18,13 @@ import org.apache.lucene.queryparser.classic.ParseException;
 
 import util.Pair;
 import bean.WikiArticle;
+import edu.stanford.nlp.ie.AbstractSequenceClassifier;
+import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.HasWord;
 import edu.stanford.nlp.ling.Sentence;
 import edu.stanford.nlp.process.DocumentPreprocessor;
+import edu.stanford.nlp.util.CoreMap;
+import edu.stanford.nlp.util.Triple;
 import freebase.FreebaseSearcher;
 
 abstract class Consumer implements Runnable {
@@ -26,6 +32,8 @@ abstract class Consumer implements Runnable {
 	protected Queue<WikiArticle> input_buffer;
 	protected Queue<WikiArticle> output_buffer;
 	protected FreebaseSearcher searcher;
+	protected AbstractSequenceClassifier<CoreLabel> classifier;
+	
 	final static String mentionRegex = "\\[\\[[\\w+\\sÉé?!#,\"'.îóçë&–üáà:°í#ἀνã\\|\\(\\)_-]*\\]\\]";
 	private static String boldRegex = "\"'[\\w+\\s\"]*\"'";
 
@@ -37,11 +45,12 @@ abstract class Consumer implements Runnable {
 	 * @param output_buffer
 	 * @param searcher
 	 */
-	public Consumer(CountDownLatch latch, Queue<WikiArticle> input_buffer, Queue<WikiArticle> output_buffer, FreebaseSearcher searcher){
+	public Consumer(CountDownLatch latch, Queue<WikiArticle> input_buffer, Queue<WikiArticle> output_buffer, FreebaseSearcher searcher, AbstractSequenceClassifier<CoreLabel> classifier){
 		this.latch = latch;
 		this.input_buffer = input_buffer;
 		this.output_buffer = output_buffer;
 		this.searcher = searcher;
+		this.classifier = classifier;
 	}
 
 	/**
@@ -105,7 +114,6 @@ abstract class Consumer implements Runnable {
 	 * @param wikiArticle
 	 */
 	public  void extractMentions (WikiArticle wikiArticle){
-		System.out.println(wikiArticle.getTitle());
 		String text = wikiArticle.getText();
 		
 		//aggiungo il titolo come mention
@@ -217,6 +225,52 @@ abstract class Consumer implements Runnable {
 		}
 		
 		return sentenceList;
+	}
+	
+	public  Map<String,List<String>> getEntitiesFromPhrasesListMap(List<String> phrases){
+
+		List<String> person = new ArrayList<String>();
+		List<String> misc = new ArrayList<String>();
+		List<String> location = new ArrayList<String>();
+		List<String> organization = new ArrayList<String>();
+		Map<String,List<String>> entityMap = new HashMap<String, List<String>>();
+		
+		try {
+			for(String currentPhrase : phrases){
+				List<Triple<String,Integer,Integer>> triples = classifier.classifyToCharacterOffsets(currentPhrase);
+				for (Triple<String,Integer,Integer> trip : triples) {
+					String text = currentPhrase.substring(trip.second(), trip.third());
+					//if (text.contains("|"))
+					//	System.out.println("entità non riconosciuta: "+text);
+					switch (trip.first) {
+					case "PERSON":
+						person.add(text);
+						break;
+					case "ORGANIZATION":
+						organization.add(text);
+						break;
+					case "LOCATION":
+						location.add(text);
+						break;
+					case "MISC":
+						misc.add(text);
+						break;
+					default:
+						break;
+					}
+				}
+			}
+
+		} catch (ClassCastException e) {
+			e.printStackTrace();
+		} 
+		entityMap.put("PERSON", person);
+		entityMap.put("LOCATION",location);
+		entityMap.put("ORGANIZATION", organization);
+		entityMap.put("MISC", misc);
+		
+		return entityMap;
+
 	}
 	
 }

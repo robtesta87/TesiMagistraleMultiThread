@@ -6,6 +6,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+import edu.stanford.nlp.ie.AbstractSequenceClassifier;
+import edu.stanford.nlp.ie.crf.CRFClassifier;
+import edu.stanford.nlp.ling.CoreLabel;
 import freebase.FreebaseSearcher;
 import multithread.Version;
 
@@ -19,6 +22,8 @@ public class Configuration {
 
 	Version version = null;
 	FreebaseSearcher freebase_searcher = null;
+	AbstractSequenceClassifier<CoreLabel> classifier = null;
+
 
 	/*
 	static String articleBasePath = null;
@@ -49,7 +54,8 @@ public class Configuration {
 		analysis_folder = props.getProperty("analysis_folder").toString();
 		version = readVersion(props);
 		freebase_searcher = createSearcher(props.getProperty("freebase_index").toString());
-
+		classifier = createClassifier();
+		
 		//quantitativeanalysis_path =  props.getProperty("quantitativeanalysisPath").toString();
 		/*
 			articleBasePath =  props.getProperty("articleBasePath").toString();
@@ -94,7 +100,7 @@ public class Configuration {
 		case "Base":
 			version2use = Version.Base;
 			break;
-		case "Intemedia":
+		case "Intermedia":
 			version2use = Version.Intermedia;
 			break;
 		case "Completa":
@@ -124,6 +130,16 @@ public class Configuration {
 		
 	}
 	
+	public AbstractSequenceClassifier<CoreLabel> createClassifier (){
+		AbstractSequenceClassifier<CoreLabel> classifier = null;
+		try {
+			classifier = CRFClassifier.getClassifier(classificatore_path);
+		} catch (ClassCastException | ClassNotFoundException | IOException e1) {
+			e1.printStackTrace();
+		}
+		return classifier;
+	}
+	
 
 	/**
 	 * @return the classificatore_path
@@ -139,6 +155,15 @@ public class Configuration {
 	 */
 	public void setClassificatore_path(String classificatore_path) {
 		this.classificatore_path = classificatore_path;
+	}
+
+
+
+	/**
+	 * @return the classifier
+	 */
+	public AbstractSequenceClassifier<CoreLabel> getClassifier() {
+		return classifier;
 	}
 
 

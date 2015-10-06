@@ -65,13 +65,13 @@ public class Producer {
 		switch(config.getVersion()){
 		case Base:
 			for (int i = 0; i< threads ; i++){
-				executor.submit(new ConsumerBase(latch, input_buffer, output_buffer, config.getFreebase_searcher()));
+				executor.submit(new ConsumerBase(latch, input_buffer, output_buffer, config.getFreebase_searcher(),config.getClassifier()));
 			}
 			break;
 		case Intermedia:
-			/*for (int i = 0; i< threads ; i++){
-				executor.submit(new Consumer(latch, queue, version,searcherMid,classifier));
-			}*/
+			for (int i = 0; i< threads ; i++){
+				executor.submit(new ConsumerIntermedia(latch, input_buffer, output_buffer, config.getFreebase_searcher(),config.getClassifier()));
+			}
 			break;
 		case Completa:
 			/*for (int i = 0; i< threads ; i++){
