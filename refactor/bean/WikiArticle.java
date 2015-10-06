@@ -1,0 +1,145 @@
+package bean;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.TreeMap;
+
+import util.Pair;
+
+/**
+ * Model for a Wikipedia article. 
+ * It contains all the informations about a single article.
+ * @author matteo
+ *
+ */
+public class WikiArticle{
+	
+	private String wikid;
+	private String title;
+	private String text;
+	
+	// testo--->wikid,mid
+	private TreeMap<String, Pair<String, String>> mentions;
+
+	// lista delle frasi annotate con i mid di freebase
+	private List<String> phrases;
+
+	/**
+	 * Costruttore
+	 */
+	public WikiArticle(String title, String wikid, String text){
+		this.title = title;
+		this.wikid = wikid;
+		this.text = text;
+		this.mentions = new TreeMap<String, Pair<String, String>>();
+		this.phrases = new ArrayList<String>();
+	}
+	
+	/**
+	 * 
+	 * @param text
+	 */
+	public void addMention(String text){
+		String wikifiedText = text.replaceAll(" ", "_");
+		Pair<String, String> pair_ids = new Pair<String,String>(wikifiedText, null);
+		this.mentions.put(text, pair_ids);
+	}
+	
+	/**
+	 * 
+	 * @param text
+	 * @param wikid
+	 */
+	public void addMention(String text, String wikid){
+		Pair<String, String> pair_ids = new Pair<String,String>(wikid, null);
+		this.mentions.put(text, pair_ids);
+	}
+	
+	/**
+	 * 
+	 * @param text
+	 * @param wikid
+	 * @param mid
+	 */
+	public void addMention(String text, String wikid, String mid){
+		Pair<String, String> pair_ids = new Pair<String, String>(wikid, mid);
+		this.mentions.put(text, pair_ids);
+	}
+
+	/* to delete: it is not a wikiarticle method
+	public void updateMid (SearcherMid searcherMid){
+		Iterator<String> keyIterator = this.wikiEntities.keySet().iterator();
+		String currentEntity = null;
+		Pair pair = null;
+		String wikid = null; 
+		EntryMappedBean mappingBean = null;
+		while(keyIterator.hasNext()){
+			currentEntity = keyIterator.next();
+			pair = this.wikiEntities.get(currentEntity);
+			wikid = (String) pair.first;
+
+			try {
+				mappingBean = searcherMid.getMid(wikid);
+				//mappingBean = searcherMid.getMid(wikid);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				System.out.println("errore");
+				e.printStackTrace();
+			}
+			String mid="";
+			if (mappingBean!=null){
+				mid= mappingBean.getMid();
+				pair.setSecond(mid);
+			}
+		}
+	}
+	*/
+
+
+	@Override
+	public String toString() {
+		return "WikiArticle [title=" + title + ", wikid=" + wikid + "]";
+	}
+	
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((text == null) ? 0 : text.hashCode());
+		result = prime * result + ((title == null) ? 0 : title.hashCode());
+		result = prime * result + ((wikid == null) ? 0 : wikid.hashCode());
+		return result;
+	}
+	
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		WikiArticle other = (WikiArticle) obj;
+		if (text == null) {
+			if (other.text != null)
+				return false;
+		} else if (!text.equals(other.text))
+			return false;
+		if (title == null) {
+			if (other.title != null)
+				return false;
+		} else if (!title.equals(other.title))
+			return false;
+		if (wikid == null) {
+			if (other.wikid != null)
+				return false;
+		} else if (!wikid.equals(other.wikid))
+			return false;
+		return true;
+	}
+
+	
+
+}
