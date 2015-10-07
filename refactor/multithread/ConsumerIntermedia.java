@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.CountDownLatch;
 
+import Logger.Logger;
 import bean.WikiArticle;
 import edu.stanford.nlp.ie.AbstractSequenceClassifier;
 import edu.stanford.nlp.ling.CoreLabel;
@@ -20,8 +21,8 @@ class ConsumerIntermedia extends Consumer {
 
 	public ConsumerIntermedia(CountDownLatch latch,
 			Queue<WikiArticle> input_buffer, Queue<WikiArticle> output_buffer,
-			FreebaseSearcher searcher,AbstractSequenceClassifier<CoreLabel> classifier, String analysis_folder) {
-		super(latch, input_buffer, output_buffer, searcher, classifier, analysis_folder);
+			FreebaseSearcher searcher,AbstractSequenceClassifier<CoreLabel> classifier, String analysis_folder, Logger logger) {
+		super(latch, input_buffer, output_buffer, searcher, classifier, analysis_folder, logger);
 		// TODO Auto-generated constructor stub
 	}
 

@@ -10,6 +10,7 @@ import java.util.concurrent.Executors;
 
 import org.apache.commons.compress.compressors.CompressorException;
 
+import Logger.Logger;
 import bean.WikiArticle;
 import configuration.Configuration;
 import loader.Loader;
@@ -18,13 +19,15 @@ public class Producer {
 
 	private Configuration config;
 	private static int cores = 2*Runtime.getRuntime().availableProcessors()-1;
+	private Logger logger;
 	
 	/**
 	 * 
 	 * @param config
 	 */
 	public Producer(Configuration config){
-		this.config = config;	
+		this.config = config;
+		setLogger(new Logger(config.getLog_file()));
 	}
 
 	/**
@@ -64,12 +67,12 @@ public class Producer {
 		switch(config.getVersion()){
 		case Base:
 			for (int i = 0; i< threads ; i++){
-				executor.submit(new ConsumerBase(latch, input_buffer, output_buffer, config.getFreebase_searcher(),config.getClassifier(),config.getAnalysis_folder()));
+				executor.submit(new ConsumerBase(latch, input_buffer, output_buffer, config.getFreebase_searcher(),config.getClassifier(),config.getAnalysis_folder(),logger));
 			}
 			break;
 		case Intermedia:
 			for (int i = 0; i< threads ; i++){
-				executor.submit(new ConsumerIntermedia(latch, input_buffer, output_buffer, config.getFreebase_searcher(),config.getClassifier(),config.getAnalysis_folder()));
+				executor.submit(new ConsumerIntermedia(latch, input_buffer, output_buffer, config.getFreebase_searcher(),config.getClassifier(),config.getAnalysis_folder(),logger));
 			}
 			break;
 		case Completa:
@@ -100,11 +103,20 @@ public class Producer {
 		Configuration config = new Configuration(config_file);
 		Producer producer = new Producer(config);
 		
+		
 		try {
 			producer.process();
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+	public Logger getLogger() {
+		return logger;
+	}
+
+	public void setLogger(Logger logger) {
+		this.logger = logger;
 	}
 }

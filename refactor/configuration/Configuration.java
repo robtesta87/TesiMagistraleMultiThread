@@ -23,19 +23,8 @@ public class Configuration {
 	Version version = null;
 	FreebaseSearcher freebase_searcher = null;
 	AbstractSequenceClassifier<CoreLabel> classifier = null;
-
-
-	/*
-	static String articleBasePath = null;
-	static String articleIntermediaPath = null;
-	static String articleCompletaPath = null;
-
-	static String mentionBasePath = null;
-	static String mentionIntermediaPath = null;
-	static String mentionCompletaPath = null;
-	 */
-
-
+	
+	String log_file = null;
 
 	public Configuration(String configFilePath){
 		Properties props = null;
@@ -55,6 +44,7 @@ public class Configuration {
 		version = readVersion(props);
 		freebase_searcher = createSearcher(props.getProperty("freebase_index").toString());
 		classifier = createClassifier();
+		log_file = props.getProperty("log_file").toString();
 		
 		//quantitativeanalysis_path =  props.getProperty("quantitativeanalysisPath").toString();
 		/*
@@ -200,4 +190,14 @@ public class Configuration {
 		return wikipediaDump_path;
 	}
 
+
+
+	/**
+	 * @return the log_file
+	 */
+	public String getLog_file() {
+		return log_file;
+	}
+
+	
 }

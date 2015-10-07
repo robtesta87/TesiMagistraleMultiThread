@@ -13,6 +13,7 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -20,6 +21,7 @@ import java.util.regex.Pattern;
 import org.apache.lucene.queryparser.classic.ParseException;
 
 import util.Pair;
+import Logger.Logger;
 import Printer.Printer;
 import SortMap.SortMap;
 import bean.WikiArticle;
@@ -40,6 +42,7 @@ abstract class Consumer implements Runnable {
 	protected String analysis_folder;
 	protected Printer printer;
 	public static SortMap sortMap;
+	protected Logger logger;
 
 	final static String mentionRegex = "\\[\\[[\\w+\\sÉé?!#,\"'.îóçë&–üáà:°í#ἀνã\\|\\(\\)_-]*\\]\\]";
 
@@ -53,7 +56,7 @@ abstract class Consumer implements Runnable {
 	 * @param output_buffer
 	 * @param searcher
 	 */
-	public Consumer(CountDownLatch latch, Queue<WikiArticle> input_buffer, Queue<WikiArticle> output_buffer, FreebaseSearcher searcher, AbstractSequenceClassifier<CoreLabel> classifier, String analysis_folder){
+	public Consumer(CountDownLatch latch, Queue<WikiArticle> input_buffer, Queue<WikiArticle> output_buffer, FreebaseSearcher searcher, AbstractSequenceClassifier<CoreLabel> classifier, String analysis_folder, Logger logger){
 		this.latch = latch;
 		this.input_buffer = input_buffer;
 		this.output_buffer = output_buffer;
@@ -62,6 +65,7 @@ abstract class Consumer implements Runnable {
 		this.classifier = classifier;
 		this.printer = new Printer();
 		this.sortMap = new SortMap();
+		this.logger = logger;
 
 	}
 
@@ -251,15 +255,18 @@ abstract class Consumer implements Runnable {
 		List<String> location = new ArrayList<String>();
 		List<String> organization = new ArrayList<String>();
 		Map<String,List<String>> entityMap = new HashMap<String, List<String>>();
-
+		String log = "";
+		Queue<String> logQueue = new ConcurrentLinkedQueue<String>();
 		try {
 			for(String currentPhrase : phrases){
 				List<Triple<String,Integer,Integer>> triples = null;
 				triples = classifier.classifyToCharacterOffsets(currentPhrase);
 				for (Triple<String,Integer,Integer> trip : triples) {
 					String text = currentPhrase.substring(trip.second(), trip.third());
-					//if (text.contains("|"))
-					//	System.out.println("entità non riconosciuta: "+text);
+					if (text.contains("|")){
+						System.out.println("entità non riconosciuta: "+text);
+						logQueue.add(text);
+					}
 					switch (trip.first) {
 					case "PERSON":
 						person.add(text);
@@ -287,8 +294,8 @@ abstract class Consumer implements Runnable {
 		entityMap.put("ORGANIZATION", organization);
 		entityMap.put("MISC", misc);
 
+		logger.addResult(logQueue);
 		return entityMap;
-
 	}
 
 	public static List<String> replaceMid (List<String> phrases,TreeMap<String, Pair<String,String>> treemap,PrintWriter out){
