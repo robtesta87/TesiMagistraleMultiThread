@@ -54,14 +54,23 @@ class ConsumerBase extends Consumer {
 			printer.PrintCleanedText(outArticle, current_article.getText());
 			
 			updateMid(current_article);
-			phrases = getSentences(current_article.getText());			
-			output_buffer.add(current_article);
+			phrases = getSentences(current_article.getText());	
+			
+			/*for (String phrase : phrases) {
+				phrase = phrase.toLowerCase();
+				System.out.println(phrase);
+			}*/
+			
+			replaceMid(phrases, current_article.getMentions(),outArticle);
+			current_article.setPhrases(phrases);
 			
 			printer.PrintMention(outArticle, current_article);
 			printer.PrintMention(outMentions, current_article);
 			
 			outArticle.close();
 			outMentions.close();
+			
+			output_buffer.add(current_article);
 		}
 		latch.countDown();
 	}

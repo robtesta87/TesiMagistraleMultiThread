@@ -10,48 +10,35 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import util.Pair;
+import SortMap.SortMap;
 import bean.WikiArticle;
 
 public class Printer {
-	
+
 	private Map<String, Pair<String, String>> sortedMap;
-
-	public <K, V > Map<K, V> sortByValues(final Map<K, V> map) {
-		Comparator<K> valueComparator = 
-				new Comparator<K>() {
-			public int compare(K k1, K k2) {
-				int compare = k1.toString().length()-k2.toString().length();
-				if (compare > 0) 
-					return -1;
-				else 
-					return 1;
-			}
-		};
-
-		Map<K, V> sortedByValues = 
-				new TreeMap<K, V>(valueComparator);
-		sortedByValues.putAll(map);
-		return sortedByValues;
+	private SortMap sortMap;
+	public Printer() {
+		sortMap  = new SortMap();
 	}
-	
+
 	public void PrintDirtyText(PrintWriter out,String text){
 		out.println("----------------------------");
 		out.println("TESTO CON MENTION");
 		out.println("----------------------------");
 		out.println(text);
 	}
-	
+
 	public void PrintCleanedText(PrintWriter out, String text){
 		out.println("----------------------------");
 		out.println("TESTO PULITO");
 		out.println("----------------------------");
 		out.println(text);
 	}
-	
+
 	public void PrintMention (PrintWriter out, WikiArticle wikiArticle){
 
 		TreeMap<String, Pair<String,String>> treemap = wikiArticle.getMentions();
-		sortedMap = sortByValues(treemap);
+		sortedMap = sortMap.sortByValues(treemap);
 
 		// Get a set of the entries on the sorted map
 		Set<Entry<String, Pair<String, String>>> set = sortedMap.entrySet();
@@ -90,5 +77,5 @@ public class Printer {
 		for (String misc : miscs) 
 			out.println(misc);
 	}
-	
+
 }

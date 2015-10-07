@@ -1,6 +1,7 @@
 package multithread;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -9,7 +10,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.Map.Entry;
 import java.util.concurrent.CountDownLatch;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -18,14 +21,13 @@ import org.apache.lucene.queryparser.classic.ParseException;
 
 import util.Pair;
 import Printer.Printer;
+import SortMap.SortMap;
 import bean.WikiArticle;
 import edu.stanford.nlp.ie.AbstractSequenceClassifier;
-import edu.stanford.nlp.ie.crf.CRFClassifier;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.HasWord;
 import edu.stanford.nlp.ling.Sentence;
 import edu.stanford.nlp.process.DocumentPreprocessor;
-import edu.stanford.nlp.util.CoreMap;
 import edu.stanford.nlp.util.Triple;
 import freebase.FreebaseSearcher;
 
@@ -37,8 +39,10 @@ abstract class Consumer implements Runnable {
 	protected AbstractSequenceClassifier<CoreLabel> classifier;
 	protected String analysis_folder;
 	protected Printer printer;
-	
+	public static SortMap sortMap;
+
 	final static String mentionRegex = "\\[\\[[\\w+\\sÉé?!#,\"'.îóçë&–üáà:°í#ἀνã\\|\\(\\)_-]*\\]\\]";
+
 	private static String boldRegex = "\"'[\\w+\\s\"]*\"'";
 
 
@@ -57,11 +61,8 @@ abstract class Consumer implements Runnable {
 		this.analysis_folder = analysis_folder;
 		this.classifier = classifier;
 		this.printer = new Printer();
-		/*try {
-			this.classifier = CRFClassifier.getClassifier("/home/roberto/workspace/TesiMagistraleMultiThread/classifiers/english.conll.4class.distsim.crf.ser.gz");
-		} catch (ClassCastException | ClassNotFoundException | IOException e1) {
-			e1.printStackTrace();
-		}*/
+		this.sortMap = new SortMap();
+
 	}
 
 	/**
@@ -126,10 +127,10 @@ abstract class Consumer implements Runnable {
 	 */
 	public  void extractMentions (WikiArticle wikiArticle){
 		String text = wikiArticle.getText();
-		
+
 		//aggiungo il titolo come mention
 		wikiArticle.addMention(wikiArticle.getTitle());
-		
+
 		//estrazione mention attraverso l'espressione regolare mentionRegex
 		//e sostituisco le mention trovate con i wikid corrispondenti
 		Pattern pattern = Pattern.compile(mentionRegex);
@@ -219,7 +220,7 @@ abstract class Consumer implements Runnable {
 			}
 		}
 	}
-	
+
 	/**
 	 * metodo che restituisce, dato una stringa (testo), una lista di frasi
 	 * @param text
@@ -234,10 +235,10 @@ abstract class Consumer implements Runnable {
 			sentenceString = Sentence.listToString(sentence);
 			sentenceList.add(sentenceString.toString());
 		}
-		
+
 		return sentenceList;
 	}
-	
+
 	/**
 	 * 
 	 * @param phrases
@@ -250,7 +251,7 @@ abstract class Consumer implements Runnable {
 		List<String> location = new ArrayList<String>();
 		List<String> organization = new ArrayList<String>();
 		Map<String,List<String>> entityMap = new HashMap<String, List<String>>();
-		
+
 		try {
 			for(String currentPhrase : phrases){
 				List<Triple<String,Integer,Integer>> triples = null;
@@ -285,12 +286,44 @@ abstract class Consumer implements Runnable {
 		entityMap.put("LOCATION",location);
 		entityMap.put("ORGANIZATION", organization);
 		entityMap.put("MISC", misc);
-		
+
 		return entityMap;
 
 	}
-	
-	
-	
-	
+
+	public static List<String> replaceMid (List<String> phrases,TreeMap<String, Pair<String,String>> treemap,PrintWriter out){
+		Map<String, Pair<String, String>> sortedMap = null;
+
+		sortedMap = sortMap.sortByValues(treemap);
+
+		Set<Entry<String, Pair<String, String>>> setMap = sortedMap.entrySet();
+
+		List<String> phrasesMid = new ArrayList<String>();
+
+		for (String phrase:phrases){
+			Iterator<Entry<String, Pair<String, String>>> i = setMap.iterator();
+			out.println("FRASE");
+			out.println(phrase);
+			while((i.hasNext())) {
+				Entry<String, Pair<String, String>> me = i.next();
+				String key = me.getKey().toString().replaceAll("\\(","-LRB- ");
+				key = key.replaceAll( "\\)"," -RRB-");
+				String mid =  me.getValue().getValue();
+				//phrase = phrase.replaceAll(key, "[["+key+"|"+mid+"]]");
+				Pattern pattern = Pattern.compile("^"+key+"|([-,.\\s]"+key+"[.\\s,-])");
+				Matcher matcher = pattern.matcher(phrase);
+				while(matcher.find()){
+					int startMention = matcher.start();
+					int endMention = matcher.end();
+					phrase = phrase.substring(0, startMention)+"[["+key+"|"+mid+"]]"+phrase.substring(endMention,phrase.length());
+				}
+			}
+			phrasesMid.add(phrase);
+			out.println(phrase);
+
+		}
+		return phrasesMid;
+	}
+
+
 }
