@@ -39,7 +39,6 @@ public class Producer {
 		System.out.println("Analysis_folder: "+config.getAnalysis_folder());
 		System.out.println("WikipediaDump_path: "+config.getWikipediaDump_path());
 		System.out.println("Version: "+config.getVersion());
-		System.out.println("Freebase_searcher: "+config.getFreebase_searcher());
 
 		// input_buffer
 		Queue<WikiArticle> input_buffer = null;
@@ -65,12 +64,12 @@ public class Producer {
 		switch(config.getVersion()){
 		case Base:
 			for (int i = 0; i< threads ; i++){
-				executor.submit(new ConsumerBase(latch, input_buffer, output_buffer, config.getFreebase_searcher(),config.getClassifier()));
+				executor.submit(new ConsumerBase(latch, input_buffer, output_buffer, config.getFreebase_searcher(),config.getClassifier(),config.getAnalysis_folder()));
 			}
 			break;
 		case Intermedia:
 			for (int i = 0; i< threads ; i++){
-				executor.submit(new ConsumerIntermedia(latch, input_buffer, output_buffer, config.getFreebase_searcher(),config.getClassifier()));
+				executor.submit(new ConsumerIntermedia(latch, input_buffer, output_buffer, config.getFreebase_searcher(),config.getClassifier(),config.getAnalysis_folder()));
 			}
 			break;
 		case Completa:
@@ -81,12 +80,14 @@ public class Producer {
 		}
 
 		latch.await();
+		
+		Date end = new Date();
+		System.out.println("Tempo di esecuzione in ms: "+(end.getTime()-start.getTime()));
 		executor.shutdown();
 
 		System.out.println("Processo finito. Output Buffer Size:\t" + output_buffer.size());
 
-		Date end = new Date();
-		System.out.println("Tempo di esecuzione in ms: "+(end.getTime()-start.getTime()));
+		
 	}
 	
 	/**

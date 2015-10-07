@@ -17,8 +17,10 @@ import java.util.regex.Pattern;
 import org.apache.lucene.queryparser.classic.ParseException;
 
 import util.Pair;
+import Printer.Printer;
 import bean.WikiArticle;
 import edu.stanford.nlp.ie.AbstractSequenceClassifier;
+import edu.stanford.nlp.ie.crf.CRFClassifier;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.HasWord;
 import edu.stanford.nlp.ling.Sentence;
@@ -33,6 +35,8 @@ abstract class Consumer implements Runnable {
 	protected Queue<WikiArticle> output_buffer;
 	protected FreebaseSearcher searcher;
 	protected AbstractSequenceClassifier<CoreLabel> classifier;
+	protected String analysis_folder;
+	protected Printer printer;
 	
 	final static String mentionRegex = "\\[\\[[\\w+\\sÉé?!#,\"'.îóçë&–üáà:°í#ἀνã\\|\\(\\)_-]*\\]\\]";
 	private static String boldRegex = "\"'[\\w+\\s\"]*\"'";
@@ -45,12 +49,19 @@ abstract class Consumer implements Runnable {
 	 * @param output_buffer
 	 * @param searcher
 	 */
-	public Consumer(CountDownLatch latch, Queue<WikiArticle> input_buffer, Queue<WikiArticle> output_buffer, FreebaseSearcher searcher, AbstractSequenceClassifier<CoreLabel> classifier){
+	public Consumer(CountDownLatch latch, Queue<WikiArticle> input_buffer, Queue<WikiArticle> output_buffer, FreebaseSearcher searcher, AbstractSequenceClassifier<CoreLabel> classifier, String analysis_folder){
 		this.latch = latch;
 		this.input_buffer = input_buffer;
 		this.output_buffer = output_buffer;
 		this.searcher = searcher;
+		this.analysis_folder = analysis_folder;
 		this.classifier = classifier;
+		this.printer = new Printer();
+		/*try {
+			this.classifier = CRFClassifier.getClassifier("/home/roberto/workspace/TesiMagistraleMultiThread/classifiers/english.conll.4class.distsim.crf.ser.gz");
+		} catch (ClassCastException | ClassNotFoundException | IOException e1) {
+			e1.printStackTrace();
+		}*/
 	}
 
 	/**
@@ -227,7 +238,12 @@ abstract class Consumer implements Runnable {
 		return sentenceList;
 	}
 	
-	public  Map<String,List<String>> getEntitiesFromPhrasesListMap(List<String> phrases){
+	/**
+	 * 
+	 * @param phrases
+	 * @return
+	 */
+	public  Map<String,List<String>> getEntities(List<String> phrases){
 
 		List<String> person = new ArrayList<String>();
 		List<String> misc = new ArrayList<String>();
@@ -237,7 +253,8 @@ abstract class Consumer implements Runnable {
 		
 		try {
 			for(String currentPhrase : phrases){
-				List<Triple<String,Integer,Integer>> triples = classifier.classifyToCharacterOffsets(currentPhrase);
+				List<Triple<String,Integer,Integer>> triples = null;
+				triples = classifier.classifyToCharacterOffsets(currentPhrase);
 				for (Triple<String,Integer,Integer> trip : triples) {
 					String text = currentPhrase.substring(trip.second(), trip.third());
 					//if (text.contains("|"))
@@ -272,5 +289,8 @@ abstract class Consumer implements Runnable {
 		return entityMap;
 
 	}
+	
+	
+	
 	
 }
