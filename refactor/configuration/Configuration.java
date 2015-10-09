@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+import redirect.RedirectSearcher;
 import edu.stanford.nlp.ie.AbstractSequenceClassifier;
 import edu.stanford.nlp.ie.crf.CRFClassifier;
 import edu.stanford.nlp.ling.CoreLabel;
@@ -23,6 +24,7 @@ public class Configuration {
 	Version version = null;
 	FreebaseSearcher freebase_searcher = null;
 	AbstractSequenceClassifier<CoreLabel> classifier = null;
+	RedirectSearcher redirect_searcher = null;
 	
 	String log_file = null;
 
@@ -45,19 +47,8 @@ public class Configuration {
 		freebase_searcher = createSearcher(props.getProperty("freebase_index").toString());
 		classifier = createClassifier();
 		log_file = props.getProperty("log_file").toString();
-		
-		//quantitativeanalysis_path =  props.getProperty("quantitativeanalysisPath").toString();
-		/*
-			articleBasePath =  props.getProperty("articleBasePath").toString();
-			articleIntermediaPath =  props.getProperty("articleIntermediaPath").toString();
-			articleCompletaPath =  props.getProperty("articleCompletaPath").toString();
-			mentionBasePath =  props.getProperty("mentionBasePath").toString();
-			mentionIntermediaPath =  props.getProperty("mentionIntermediaPath").toString();
-			mentionCompletaPath =  props.getProperty("mentionCompletaPath").toString();
-		 */
-
+		redirect_searcher = createRedirectSearcher(props.getProperty("redirect_index").toString());
 	}
-
 
 
 	/**
@@ -68,14 +59,12 @@ public class Configuration {
 	}
 
 
-
 	/**
 	 * @return the freebase_searcher
 	 */
 	public FreebaseSearcher getFreebase_searcher() {
 		return freebase_searcher;
 	}
-
 
 
 	/**
@@ -118,6 +107,23 @@ public class Configuration {
 		}
 		return freebaseSearcher;
 		
+	}
+	
+	/**
+	 * 
+	 * @param indexPath
+	 * @return
+	 */
+	public RedirectSearcher createRedirectSearcher(String indexPath){
+		RedirectSearcher redirectSearcher = null;
+		try {
+			redirectSearcher  = new RedirectSearcher(indexPath);
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.out.println("Index redirect path errato nel config file.");
+		}
+		
+		return redirectSearcher;
 	}
 	
 	public AbstractSequenceClassifier<CoreLabel> createClassifier (){
@@ -191,12 +197,27 @@ public class Configuration {
 	}
 
 
-
 	/**
 	 * @return the log_file
 	 */
 	public String getLog_file() {
 		return log_file;
+	}
+
+
+	/**
+	 * @return the redirect_searcher
+	 */
+	public RedirectSearcher getRedirect_searcher() {
+		return redirect_searcher;
+	}
+
+
+	/**
+	 * @param redirect_searcher the redirect_searcher to set
+	 */
+	public void setRedirect_searcher(RedirectSearcher redirect_searcher) {
+		this.redirect_searcher = redirect_searcher;
 	}
 
 	

@@ -20,6 +20,7 @@ import java.util.regex.Pattern;
 
 import org.apache.lucene.queryparser.classic.ParseException;
 
+import redirect.RedirectSearcher;
 import util.Pair;
 import Logger.Logger;
 import Printer.Printer;
@@ -46,6 +47,7 @@ abstract class Consumer implements Runnable {
 	protected Logger logger_quantitativeAnalysis;
 	protected Logger logger_countMid;
 	protected int cont_mention;
+	protected RedirectSearcher redirect_searcher;
 
 	final static String special_char = "Éé?!#,\"'.îóçë&–üáà:°í#ἀνãİï/āèñöÖÆçæäüğş"
 			+ "ãÎøÁúšúćčžŠßıüÇò";
@@ -65,7 +67,7 @@ abstract class Consumer implements Runnable {
 	public Consumer(CountDownLatch latch, Queue<WikiArticle> input_buffer, Queue<WikiArticle> output_buffer,
 			FreebaseSearcher searcher, AbstractSequenceClassifier<CoreLabel> classifier, 
 			String analysis_folder, Logger logger, Logger quantitativeAnalysis,
-			Logger logger_countMid){
+			Logger logger_countMid, RedirectSearcher redirect_searcher){
 		this.latch = latch;
 		this.input_buffer = input_buffer;
 		this.output_buffer = output_buffer;
@@ -78,6 +80,7 @@ abstract class Consumer implements Runnable {
 		this.logger_quantitativeAnalysis = quantitativeAnalysis;
 		this.logger_countMid = logger_countMid;
 		this.cont_mention = 0;
+		this.redirect_searcher = redirect_searcher;
 	}
 
 	/**
@@ -441,6 +444,7 @@ abstract class Consumer implements Runnable {
 		
 		return (wikiArticle.getTitle()+"\t"+phrases2mid.size()+"\t"+phrases.size()+"\t"+percentage+"\t"+duemid+"\t"+tremid+"\t"+quattromid+"\t"+cinquemid+"\t"+altrimid);
 	}
-
+	
+	
 
 }

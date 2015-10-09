@@ -9,6 +9,7 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 
+import redirect.RedirectSearcher;
 import Logger.Logger;
 import bean.WikiArticle;
 import edu.stanford.nlp.ie.AbstractSequenceClassifier;
@@ -27,8 +28,8 @@ class ConsumerBase extends Consumer {
 	 * @param searcher
 	 */
 	public ConsumerBase(CountDownLatch latch, Queue<WikiArticle> input_buffer, 
-			Queue<WikiArticle> output_buffer, FreebaseSearcher searcher,AbstractSequenceClassifier<CoreLabel> classifier, String analysis_folder, Logger logger, Logger logger_quantitativeAnalysis, Logger logger_countMid) {
-		super(latch, input_buffer, output_buffer, searcher, classifier, analysis_folder, logger, logger_quantitativeAnalysis, logger_countMid);
+			Queue<WikiArticle> output_buffer, FreebaseSearcher searcher,AbstractSequenceClassifier<CoreLabel> classifier, String analysis_folder, Logger logger, Logger logger_quantitativeAnalysis, Logger logger_countMid, RedirectSearcher redirect_searcher) {
+		super(latch, input_buffer, output_buffer, searcher, classifier, analysis_folder, logger, logger_quantitativeAnalysis, logger_countMid, redirect_searcher);
 	}
 
 	@Override
@@ -41,7 +42,7 @@ class ConsumerBase extends Consumer {
 		int size_queue = 0;
 		while ((current_article = input_buffer.poll()) != null){
 			System.out.println(current_article.getTitle());
-
+			/*
 			PrintWriter outArticle = null;
 			PrintWriter outMentions = null;
 			try {
@@ -51,12 +52,12 @@ class ConsumerBase extends Consumer {
 				System.out.println("errore nella creazione file di testo di analisi!");
 				e.printStackTrace();
 			}	
-			
-			printer.PrintDirtyText(outArticle, current_article.getText());
+			*/
+			//printer.PrintDirtyText(outArticle, current_article.getText());
 			
 			extractMentions(current_article);
 			
-			printer.PrintCleanedText(outArticle, current_article.getText());
+			//printer.PrintCleanedText(outArticle, current_article.getText());
 			
 			updateMid(current_article);
 			phrases = getSentences(current_article.getText());	
@@ -65,11 +66,11 @@ class ConsumerBase extends Consumer {
 			phrases = replaceMid(phrases, current_article.getMentions());
 			current_article.setPhrases(phrases);
 			
-			printer.PrintMention(outArticle, current_article);
-			printer.PrintMention(outMentions, current_article);
+			//printer.PrintMention(outArticle, current_article);
+			//printer.PrintMention(outMentions, current_article);
 			
-			outArticle.close();
-			outMentions.close();
+			//outArticle.close();
+			//outMentions.close();
 			
 			//aggiungo la quantità delle mention trovate in un log
 			logQueue.add(current_article.getTitle()+"\t"+current_article.getMentions().size());

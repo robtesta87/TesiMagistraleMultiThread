@@ -22,6 +22,7 @@ public class Producer {
 	private Logger logger;
 	private Logger logger_quantitativeAnalysis;
 	private Logger logger_countMid;
+	
 	/**
 	 * 
 	 * @param config
@@ -72,20 +73,25 @@ public class Producer {
 			for (int i = 0; i< threads ; i++){
 				executor.submit(new ConsumerBase(latch, input_buffer, output_buffer, config.getFreebase_searcher(),
 												config.getClassifier(),config.getAnalysis_folder(),
-												logger,logger_quantitativeAnalysis, logger_countMid));
+												logger,logger_quantitativeAnalysis, logger_countMid,
+												config.getRedirect_searcher()));
 			}
 			break;
 		case Intermedia:
 			for (int i = 0; i< threads ; i++){
 				executor.submit(new ConsumerIntermedia(latch, input_buffer, output_buffer, config.getFreebase_searcher(),
 													config.getClassifier(),config.getAnalysis_folder(),
-													logger,logger_quantitativeAnalysis, logger_countMid));
+													logger,logger_quantitativeAnalysis, logger_countMid,
+													config.getRedirect_searcher()));
 			}
 			break;
 		case Completa:
-			/*for (int i = 0; i< threads ; i++){
-				executor.submit(new Consumer(latch, queue, version,searcherMid,classifier));
-			}*/
+			for (int i = 0; i< threads ; i++){
+				executor.submit(new ConsumerCompleta(latch, input_buffer, output_buffer, config.getFreebase_searcher(),
+													config.getClassifier(),config.getAnalysis_folder(),
+													logger,logger_quantitativeAnalysis, logger_countMid,
+													config.getRedirect_searcher()));
+			}
 			break;
 		}
 
@@ -100,24 +106,6 @@ public class Producer {
 		
 	}
 	
-	/**
-	 * Entry point.
-	 * @param args
-	 */
-	public static void main(String[] args){
-
-		String config_file = "/home/roberto/workspace/TesiMagistraleMultiThread/refactor/util/config.properties";
-		Configuration config = new Configuration(config_file);
-		Producer producer = new Producer(config);
-		
-		
-		try {
-			producer.process();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
 
 	public Logger getLogger() {
 		return logger;
@@ -141,5 +129,25 @@ public class Producer {
 
 	public void setCountMidFile(Logger countMidFile) {
 		this.logger_countMid = countMidFile;
+	}
+	
+	
+	/**
+	 * Entry point.
+	 * @param args
+	 */
+	public static void main(String[] args){
+		
+		String config_file = "/home/roberto/workspace/TesiMagistraleMultiThread/refactor/util/config.properties";
+		Configuration config = new Configuration(config_file);
+		Producer producer = new Producer(config);
+		
+		
+		try {
+			producer.process();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }
