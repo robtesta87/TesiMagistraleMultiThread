@@ -56,10 +56,65 @@ public class ConsumerCompleta extends Consumer{
 				}
 				if (redirect_pair!=null){
 					wikiArticle.addMention(currentEntity, redirect_pair.getValue());
+					cont_redirect++;
 				}
 			}
 		}
 	}
+	
+	public void addPersonRedirect(List<String> entities, WikiArticle wikiArticle){
+		String currentEntity= null;
+		TreeMap<String, Pair<String,String>> treemap = null;
+
+		for (int i = 0; i < entities.size(); i++) {
+			currentEntity = entities.get(i);
+			treemap = wikiArticle.getMentions();
+			String[] personSpitted = currentEntity.split(" ");
+			Pair<String,String> pair = treemap.get(currentEntity);
+			if (currentEntity.equals(wikiArticle.getTitle())){
+				wikiArticle.addMention(currentEntity,pair.getKey(),pair.getValue());
+				//aggiungo il cognome (ultima parola dell'entità) associandogli lo stesso wikid
+				wikiArticle.addMention(personSpitted[personSpitted.length-1],wikiArticle.getWikid(),pair.getValue());
+				cont_mention++;
+			}
+			else{
+
+				String[] titleSplitted = wikiArticle.getTitle().split(" ");
+
+				if ((wikiArticle.getTitle().contains(currentEntity))&&(titleSplitted[titleSplitted.length-1].equals(personSpitted[personSpitted.length-1]))){
+					pair =treemap.get(wikiArticle.getTitle());
+					wikiArticle.addMention(currentEntity,pair.getKey(),pair.getValue());
+					//aggiungo il cognome (ultima parola dell'entità) associandogli lo stesso wikid
+					wikiArticle.addMention(personSpitted[personSpitted.length-1],wikiArticle.getWikid(),pair.getValue());
+					cont_mention++;
+
+				}
+				else{
+					if (pair!=null){
+						wikiArticle.addMention(currentEntity,pair.getKey(),pair.getValue());
+						//aggiungo il cognome (ultima parola dell'entità) associandogli lo stesso wikid
+						wikiArticle.addMention(personSpitted[personSpitted.length-1],pair.getKey(),pair.getValue());
+						cont_mention++;
+					}
+					else{
+						//se non si trova un match allora interrogo l'indice redirect
+						Pair<String,String> redirect_pair =  null;
+						try {
+							redirect_pair = redirect_searcher.getRedirect(currentEntity);
+						} catch (ParseException | IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						if (redirect_pair!=null){
+							wikiArticle.addMention(currentEntity, redirect_pair.getValue());
+							cont_redirect++;
+						}
+					}
+				}
+			}
+		}
+	}
+
 	
 	@Override
 	public void run() {
@@ -73,7 +128,8 @@ public class ConsumerCompleta extends Consumer{
 		int size_queue = 0;
 
 		while ((current_article = input_buffer.poll()) != null){
-			cont_mention=0;
+			cont_mention = 0;
+			cont_redirect = 0;
 			System.out.println(current_article.getTitle());
 
 			
@@ -103,19 +159,23 @@ public class ConsumerCompleta extends Consumer{
 			printer.PrintMention(outArticle, current_article);
 
 
-			addPerson(entitiesMap.get("PERSON"), current_article);
+			addPersonRedirect(entitiesMap.get("PERSON"), current_article);
 
 			//controllo se nelle entità ci sono dei match esatti nelle mention originali per il controllo quantitativo
-			//countMentions(entitiesMap.get("ORGANIZATION"), current_article);
-			//countMentions(entitiesMap.get("MISC"), current_article);
-			//countMentions(entitiesMap.get("LOCATION"), current_article);
+			countMentions(entitiesMap.get("ORGANIZATION"), current_article);
+			countMentions(entitiesMap.get("MISC"), current_article);
+			countMentions(entitiesMap.get("LOCATION"), current_article);
+			
+			
+			//aggiungo la quantità delle mention trovate in un log
+			cont_mention = cont_mention + cont_original_mention;
 			
 			
 			addRedirect(entitiesMap.get("ORGANIZATION"), current_article);
 			addRedirect(entitiesMap.get("MISC"), current_article);
 			addRedirect(entitiesMap.get("LOCATION"), current_article);
 			updateMid(current_article);
-
+			System.out.println();
 			phrases_mid = replaceMid(phrases, current_article.getMentions());
 			current_article.setPhrases(phrases_mid);
 
@@ -131,24 +191,20 @@ public class ConsumerCompleta extends Consumer{
 			printer.PrintMention(outArticle, current_article);
 			printer.PrintMention(outMentions, current_article);
 
-
-			outArticle.close();
-			outMentions.close();
-/*
-			//aggiungo la quantità delle mention trovate in un log
-			cont_mention = cont_mention + cont_original_mention;
-			logQueue.add(current_article.getTitle()+"\t"+cont_original_mention+"\t"+cont_mention);
+			cont_redirect = cont_redirect+cont_mention;
+			logQueue.add(current_article.getTitle()+"\t"+cont_original_mention+"\t"+cont_mention+" \t"+ cont_redirect);
 			size_queue++;
 			//conto quanti mid ci sono per frase e salvo i risultati in un log
 			logQueueMid.add(countMid(current_article));
-
+			
 			//scrivo i risultati delle analisi nei file di log
-			if (size_queue>=50){
+			if (size_queue>=5){
 				logger_quantitativeAnalysis.addResult(logQueue);
 				logger_countMid.addResult(logQueueMid);
 				size_queue = 0;
 			}
-*/
+			outArticle.close();
+			outMentions.close();
 			output_buffer.add(current_article);
 		}
 		latch.countDown();

@@ -106,7 +106,7 @@ class ConsumerIntermedia extends Consumer {
 			logQueueMid.add(countMid(current_article));
 			
 			//scrivo i risultati delle analisi nei file di log
-			if (size_queue>=50){
+			if (size_queue>=5){
 				logger_quantitativeAnalysis.addResult(logQueue);
 				logger_countMid.addResult(logQueueMid);
 				size_queue = 0;

@@ -47,6 +47,7 @@ abstract class Consumer implements Runnable {
 	protected Logger logger_quantitativeAnalysis;
 	protected Logger logger_countMid;
 	protected int cont_mention;
+	protected int cont_redirect;
 	protected RedirectSearcher redirect_searcher;
 
 	final static String special_char = "Éé?!#,\"'.îóçë&–üáà:°í#ἀνãİï/āèñöÖÆçæäüğş"
@@ -80,6 +81,7 @@ abstract class Consumer implements Runnable {
 		this.logger_quantitativeAnalysis = quantitativeAnalysis;
 		this.logger_countMid = logger_countMid;
 		this.cont_mention = 0;
+		this.cont_redirect = 0;
 		this.redirect_searcher = redirect_searcher;
 	}
 
