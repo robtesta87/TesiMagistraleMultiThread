@@ -129,28 +129,7 @@ public class WikiArticle{
 		this.mentions.put(text, pair_ids);
 	}
 	
-	/**
-	 * 
-	 * @param text
-	 * @param wikid
-	 * @param mid
-	 */
-	public void addMentionPerson(String text,String wikid,String mid){
-		Pair<String, String> pair = new Pair<String,String>(wikid,mid);
-		this.mentions.put(text, pair);
-	}
 	
-	/**
-	 * 
-	 * @param text
-	 * @param wikid
-	 */
-	public void addMentionPerson(String text,String wikid){
-		Pair<String, String> pair = new Pair<String,String>(wikid,"null");
-		this.mentions.put(text, pair);
-	}
-
-
 	@Override
 	public String toString() {
 		return "WikiArticle [title=" + title + ", wikid=" + wikid + "]";

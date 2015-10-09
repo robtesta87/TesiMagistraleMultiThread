@@ -27,8 +27,8 @@ class ConsumerBase extends Consumer {
 	 * @param searcher
 	 */
 	public ConsumerBase(CountDownLatch latch, Queue<WikiArticle> input_buffer, 
-			Queue<WikiArticle> output_buffer, FreebaseSearcher searcher,AbstractSequenceClassifier<CoreLabel> classifier, String analysis_folder, Logger logger, Logger quantitativeAnalysisBase, Logger countMidFile) {
-		super(latch, input_buffer, output_buffer, searcher, classifier, analysis_folder, logger, quantitativeAnalysisBase, countMidFile);
+			Queue<WikiArticle> output_buffer, FreebaseSearcher searcher,AbstractSequenceClassifier<CoreLabel> classifier, String analysis_folder, Logger logger, Logger logger_quantitativeAnalysis, Logger logger_countMid) {
+		super(latch, input_buffer, output_buffer, searcher, classifier, analysis_folder, logger, logger_quantitativeAnalysis, logger_countMid);
 	}
 
 	@Override
@@ -62,7 +62,7 @@ class ConsumerBase extends Consumer {
 			phrases = getSentences(current_article.getText());	
 			
 						
-			phrases = replaceMid(phrases, current_article.getMentions(),outArticle);
+			phrases = replaceMid(phrases, current_article.getMentions());
 			current_article.setPhrases(phrases);
 			
 			printer.PrintMention(outArticle, current_article);
@@ -75,7 +75,7 @@ class ConsumerBase extends Consumer {
 			logQueue.add(current_article.getTitle()+"\t"+current_article.getMentions().size());
 			size_queue++;
 			if (size_queue>=30){
-				quantitativeAnalysisBase.addResult(logQueue);
+				logger_quantitativeAnalysis.addResult(logQueue);
 				size_queue = 0;
 			}
 			

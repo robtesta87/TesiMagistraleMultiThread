@@ -25,7 +25,6 @@ import Logger.Logger;
 import Printer.Printer;
 import SortMap.SortMap;
 import bean.WikiArticle;
-import bean.WikiArticleOld;
 import edu.stanford.nlp.ie.AbstractSequenceClassifier;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.HasWord;
@@ -42,13 +41,14 @@ abstract class Consumer implements Runnable {
 	protected AbstractSequenceClassifier<CoreLabel> classifier;
 	protected String analysis_folder;
 	protected Printer printer;
-	public static SortMap sortMap;
+	protected static SortMap sortMap;
 	protected Logger logger;
-	protected Logger quantitativeAnalysisBase;
-	protected Logger countMidFile;
+	protected Logger logger_quantitativeAnalysis;
+	protected Logger logger_countMid;
+	protected int cont_mention;
 
 	final static String special_char = "Éé?!#,\"'.îóçë&–üáà:°í#ἀνãİï/āèñöÖÆçæäüğş"
-									 + "ãÎøÁúšúćčžŠßıüÇò";
+			+ "ãÎøÁúšúćčžŠßıüÇò";
 	final static String mentionRegex = "\\[\\[[\\w+\\s"+special_char+"\\|\\(\\)_-]*\\]\\]";
 
 	private static String boldRegex = "\"'[\\w+\\s\"]*\"'";
@@ -63,9 +63,9 @@ abstract class Consumer implements Runnable {
 	 * @param quantitativeAnalysisBase 
 	 */
 	public Consumer(CountDownLatch latch, Queue<WikiArticle> input_buffer, Queue<WikiArticle> output_buffer,
-					FreebaseSearcher searcher, AbstractSequenceClassifier<CoreLabel> classifier, 
-					String analysis_folder, Logger logger, Logger quantitativeAnalysisBase,
-					Logger countMidFile){
+			FreebaseSearcher searcher, AbstractSequenceClassifier<CoreLabel> classifier, 
+			String analysis_folder, Logger logger, Logger quantitativeAnalysis,
+			Logger logger_countMid){
 		this.latch = latch;
 		this.input_buffer = input_buffer;
 		this.output_buffer = output_buffer;
@@ -75,9 +75,9 @@ abstract class Consumer implements Runnable {
 		this.printer = new Printer();
 		this.sortMap = new SortMap();
 		this.logger = logger;
-		this.quantitativeAnalysisBase = quantitativeAnalysisBase;
-		this.countMidFile = countMidFile;
-		
+		this.logger_quantitativeAnalysis = quantitativeAnalysis;
+		this.logger_countMid = logger_countMid;
+		this.cont_mention = 0;
 	}
 
 	/**
@@ -316,7 +316,7 @@ abstract class Consumer implements Runnable {
 	 * @param out
 	 * @return
 	 */
-	public static List<String> replaceMid (List<String> phrases,TreeMap<String, Pair<String,String>> treemap,PrintWriter out){
+	public static List<String> replaceMid (List<String> phrases,TreeMap<String, Pair<String,String>> treemap){
 		Map<String, Pair<String, String>> sortedMap = null;
 
 		sortedMap = sortMap.sortByValues(treemap);
@@ -327,32 +327,19 @@ abstract class Consumer implements Runnable {
 
 		for (String phrase:phrases){
 			Iterator<Entry<String, Pair<String, String>>> i = setMap.iterator();
-			out.println("FRASE");
-			out.println(phrase);
 			while((i.hasNext())) {
 				Entry<String, Pair<String, String>> me = i.next();
 				String key = me.getKey().toString().replaceAll("\\(","-LRB- ");
 				key = key.replaceAll( "\\)"," -RRB-");
 				String mid =  me.getValue().getValue();
-				phrase = phrase.replaceAll("^"+key+"[\\s]|([\\s]"+key+"[\\s])", "[["+key+"|"+mid+"]]");
-				/*
-				Pattern pattern = Pattern.compile("^"+key+"|([-,.\\s]"+key+"[.\\s,-s])");
-				Matcher matcher = pattern.matcher(phrase);
-				while(matcher.find()){
-					int startMention = matcher.start();
-					int endMention = matcher.end();
-					phrase = phrase.substring(0, startMention)+"[["+key+"|"+mid+"]]"+phrase.substring(endMention,phrase.length());
-				}
-				*/
+				phrase = phrase.replaceAll("^"+key+"[\\s]|([\\s]"+key+"[\\s])|([\\s]"+key+")$", " [["+key+"|"+mid+"]] ");
 			}
 			phrasesMid.add(phrase);
-			out.println(phrase);
-
 		}
 		return phrasesMid;
 	}
-	
-	
+
+
 	/**
 	 * aggiunge per ogni persona individuata dal NER il cognome (ultima parola)
 	 * @param entities
@@ -369,7 +356,9 @@ abstract class Consumer implements Runnable {
 			Pair<String,String> pair = treemap.get(currentEntity);
 			if (currentEntity.equals(wikiArticle.getTitle())){
 				wikiArticle.addMention(currentEntity,pair.getKey(),pair.getValue());
-				wikiArticle.addMentionPerson(personSpitted[personSpitted.length-1],wikiArticle.getWikid(),pair.getValue());
+				//aggiungo il cognome (ultima parola dell'entità) associandogli lo stesso wikid
+				wikiArticle.addMention(personSpitted[personSpitted.length-1],wikiArticle.getWikid(),pair.getValue());
+				cont_mention++;
 			}
 			else{
 
@@ -378,40 +367,43 @@ abstract class Consumer implements Runnable {
 				if ((wikiArticle.getTitle().contains(currentEntity))&&(titleSplitted[titleSplitted.length-1].equals(personSpitted[personSpitted.length-1]))){
 					pair =treemap.get(wikiArticle.getTitle());
 					wikiArticle.addMention(currentEntity,pair.getKey(),pair.getValue());
-					wikiArticle.addMentionPerson(personSpitted[personSpitted.length-1],wikiArticle.getWikid(),pair.getValue());
+					//aggiungo il cognome (ultima parola dell'entità) associandogli lo stesso wikid
+					wikiArticle.addMention(personSpitted[personSpitted.length-1],wikiArticle.getWikid(),pair.getValue());
+					cont_mention++;
 
 				}
 				else{
 					if (pair!=null){
 						wikiArticle.addMention(currentEntity,pair.getKey(),pair.getValue());
-						wikiArticle.addMentionPerson(personSpitted[personSpitted.length-1],pair.getKey(),pair.getValue());
+						//aggiungo il cognome (ultima parola dell'entità) associandogli lo stesso wikid
+						wikiArticle.addMention(personSpitted[personSpitted.length-1],pair.getKey(),pair.getValue());
+						cont_mention++;
 					}
 				}
 			}
 		}
 	}
-	
+
 	/**
 	 * 
 	 * @param entities
 	 * @param wikiArticle
 	 */
-	public void addEntity(List<String> entities, WikiArticle wikiArticle){
-		
+	public void countMentions(List<String> entities, WikiArticle wikiArticle){
+
 		String currentEntity= null;
 		TreeMap<String, Pair<String,String>> treemap = wikiArticle.getMentions();
 
 		for (int i = 0; i < entities.size(); i++) {
 			currentEntity = entities.get(i);
 			if (treemap.containsKey(currentEntity)){
-				Pair<String,String> pair = treemap.get(currentEntity);
-				wikiArticle.addMention(currentEntity,pair.getKey(),pair.getValue());
+				cont_mention++;
 			}
 		}
 
 	}
-	
-	public void countMid(WikiArticle wikiArticle){
+
+	public String countMid(WikiArticle wikiArticle){
 		List<String> phrases2mid = new ArrayList<String>();
 		int countMid=0;
 		Pattern pattern=null;
@@ -422,12 +414,13 @@ abstract class Consumer implements Runnable {
 		int cinquemid = 0;
 		int altrimid = 0;
 		List<String> phrases = wikiArticle.getPhrases();
+		String mentionString = null;
 		for (String phrase : phrases) {
 			countMid=0;
 			pattern = Pattern.compile(mentionRegex);
 			matcher = pattern.matcher(phrase);
 			while(matcher.find()){
-				String mentionString = matcher.group();
+				mentionString = matcher.group();
 				countMid++;
 			}
 			if (countMid>1)
@@ -442,12 +435,11 @@ abstract class Consumer implements Runnable {
 				cinquemid++;
 			if (countMid>5)
 				altrimid++;
-				
+
 		}
 		float percentage = (phrases2mid.size() * 100)/phrases.size();
-		Queue<String> logQueue = new ConcurrentLinkedQueue<String>();
-		logQueue.add(wikiArticle.getTitle()+"\t"+phrases2mid.size()+"\t"+phrases.size()+"\t"+percentage+"\t"+duemid+"\t"+tremid+"\t"+quattromid+"\t"+cinquemid+"\t"+altrimid);
-		countMidFile.addResult(logQueue);
+		
+		return (wikiArticle.getTitle()+"\t"+phrases2mid.size()+"\t"+phrases.size()+"\t"+percentage+"\t"+duemid+"\t"+tremid+"\t"+quattromid+"\t"+cinquemid+"\t"+altrimid);
 	}
 
 

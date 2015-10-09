@@ -20,8 +20,8 @@ public class Producer {
 	private Configuration config;
 	private static int cores = 2*Runtime.getRuntime().availableProcessors()-1;
 	private Logger logger;
-	private Logger quantitativeAnalysisBase;
-	private Logger countMidFile;
+	private Logger logger_quantitativeAnalysis;
+	private Logger logger_countMid;
 	/**
 	 * 
 	 * @param config
@@ -29,7 +29,7 @@ public class Producer {
 	public Producer(Configuration config){
 		this.config = config;
 		setLogger(new Logger(config.getLog_file()));
-		setQuantitativeAnalysisBase(new Logger(config.getAnalysis_folder()+"quantitativeAnalysisBase.csv"));
+		setQuantitativeAnalysisBase(new Logger(config.getAnalysis_folder()+"quantitativeAnalysis.csv"));
 		setCountMidFile(new Logger(config.getAnalysis_folder()+"countMid.csv"));
 	}
 
@@ -70,12 +70,16 @@ public class Producer {
 		switch(config.getVersion()){
 		case Base:
 			for (int i = 0; i< threads ; i++){
-				executor.submit(new ConsumerBase(latch, input_buffer, output_buffer, config.getFreebase_searcher(),config.getClassifier(),config.getAnalysis_folder(),logger,quantitativeAnalysisBase, countMidFile));
+				executor.submit(new ConsumerBase(latch, input_buffer, output_buffer, config.getFreebase_searcher(),
+												config.getClassifier(),config.getAnalysis_folder(),
+												logger,logger_quantitativeAnalysis, logger_countMid));
 			}
 			break;
 		case Intermedia:
 			for (int i = 0; i< threads ; i++){
-				executor.submit(new ConsumerIntermedia(latch, input_buffer, output_buffer, config.getFreebase_searcher(),config.getClassifier(),config.getAnalysis_folder(),logger,quantitativeAnalysisBase, countMidFile));
+				executor.submit(new ConsumerIntermedia(latch, input_buffer, output_buffer, config.getFreebase_searcher(),
+													config.getClassifier(),config.getAnalysis_folder(),
+													logger,logger_quantitativeAnalysis, logger_countMid));
 			}
 			break;
 		case Completa:
@@ -124,18 +128,18 @@ public class Producer {
 	}
 
 	public Logger getQuantitativeAnalysisBase() {
-		return quantitativeAnalysisBase;
+		return logger_quantitativeAnalysis;
 	}
 
 	public void setQuantitativeAnalysisBase(Logger quantitativeAnalysisBase) {
-		this.quantitativeAnalysisBase = quantitativeAnalysisBase;
+		this.logger_quantitativeAnalysis = quantitativeAnalysisBase;
 	}
 
 	public Logger getCountMidFile() {
-		return countMidFile;
+		return logger_countMid;
 	}
 
 	public void setCountMidFile(Logger countMidFile) {
-		this.countMidFile = countMidFile;
+		this.logger_countMid = countMidFile;
 	}
 }
