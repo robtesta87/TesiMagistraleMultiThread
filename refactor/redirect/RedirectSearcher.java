@@ -40,7 +40,7 @@ public class RedirectSearcher {
 		Pair<String, String> result = new Pair<String, String>(null, null);
 		int maxHits = 1;
 		text=text.replaceAll(" ", "_");
-		if (!text.equals("")&&(text!=null)){
+		if (!(text.equals(""))&&(text!=null)){
 			ScoreDoc[] hits = null;
 			synchronized (searcher) {
 				Query query = parser.parse(QueryParser.escape(text));

@@ -50,7 +50,7 @@ public class FreebaseSearcher {
 	public  Pair<String, String> getMid(String wikid) throws ParseException, IOException{
 		Pair<String, String> result = new Pair<String, String>(null, null);
 		int maxHits = 1;
-		if (!wikid.equals("")&&(wikid!=null)){
+		if (!(wikid.equals(""))&&(wikid!=null)){
 			ScoreDoc[] hits = null;
 			synchronized (searcher) {
 				Query query = parser.parse(QueryParser.escape(wikid));
