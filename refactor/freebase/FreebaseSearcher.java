@@ -17,11 +17,8 @@ import org.apache.lucene.util.Version;
 
 import util.Pair;
 
-/**
- * 
- * @author matteo
- *
- */
+
+
 public class FreebaseSearcher {
 
 	private static final String field = "title";

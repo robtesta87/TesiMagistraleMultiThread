@@ -421,12 +421,27 @@ abstract class Consumer implements Runnable {
 		List<String> phrases = wikiArticle.getPhrases();
 		String mentionString = null;
 		for (String phrase : phrases) {
+			List<Integer> indexMention = new ArrayList<Integer>();
 			countMid=0;
 			pattern = Pattern.compile(mentionRegex);
 			matcher = pattern.matcher(phrase);
 			while(matcher.find()){
 				mentionString = matcher.group();
+				indexMention.add(matcher.start());
+				indexMention.add(matcher.end());
 				countMid++;
+			}
+			List<String> patterns = new ArrayList<String>();
+			System.out.println(phrase);
+			for (int i = 0; i < indexMention.size(); i++) {
+				//System.out.println("indexMentions "+i+": "+indexMention.get(i));
+				if (i!=0){
+					if((i%2)==0){
+						patterns.add(phrase.substring(indexMention.get(i-1),indexMention.get(i)));
+						System.out.println(phrase.substring(indexMention.get(i-1),indexMention.get(i)));
+						System.out.println(phrase.substring(indexMention.get(i-1),indexMention.get(i)).split(" ").length);
+					}
+				}
 			}
 			if (countMid>1)
 				phrases2mid.add(phrase);
@@ -446,6 +461,8 @@ abstract class Consumer implements Runnable {
 		
 		return (wikiArticle.getTitle()+"\t"+phrases2mid.size()+"\t"+phrases.size()+"\t"+percentage+"\t"+duemid+"\t"+tremid+"\t"+quattromid+"\t"+cinquemid+"\t"+altrimid);
 	}
+	
+	
 	
 	
 

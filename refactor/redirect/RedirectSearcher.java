@@ -64,7 +64,7 @@ public class RedirectSearcher {
 	}
 	
 	public static void main(String[] args) throws IOException, ParseException {
-		RedirectSearcher rs = new RedirectSearcher("/home/roberto/workspace/TesiMagistraleMultiThread/util/index_redirect");
+		RedirectSearcher rs = new RedirectSearcher("/home/roberto/Scrivania/TesiMagistrale/indici/index_redirect");
 		Pair<String,String> pair = rs.getRedirect("AS Roma");
 		if (pair!=null)
 			System.out.println(pair.toString());

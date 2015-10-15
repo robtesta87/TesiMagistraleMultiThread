@@ -94,7 +94,7 @@ public class Producer {
 			}
 			break;
 		}
-
+		
 		latch.await();
 		
 		Date end = new Date();

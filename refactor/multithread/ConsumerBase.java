@@ -85,6 +85,7 @@ class ConsumerBase extends Consumer {
 			
 			output_buffer.add(current_article);
 		}
+		
 		latch.countDown();
 	}
 
