@@ -87,7 +87,7 @@ public class Loader {
 						if (docSplitted.length>1){
 							titleText = docSplitted[1].split("\">");
 							titleWikiArticle = titleText[0];
-							textWikiArticle = titleText[1].split("</doc>")[0];
+							textWikiArticle = titleText[1].split("</doc>")[0].substring(titleWikiArticle.length()+2);
 							if (!(titleWikiArticle.contains("List of"))){
 								WikiArticle wikiArticle = new WikiArticle(titleWikiArticle,titleWikiArticle.replaceAll(" ","_"),textWikiArticle);
 								articles.add(wikiArticle);

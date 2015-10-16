@@ -54,7 +54,7 @@ abstract class Consumer implements Runnable {
 			+ "ãÎøÁúšúćčžŠßıüÇò";
 	final static String mentionRegex = "\\[\\[[\\w+\\s"+special_char+"\\|\\(\\)_-]*\\]\\]";
 
-	private static String boldRegex = "\"'[\\w+\\s\"]*\"'";
+	final static String boldRegex = "\"'[\\w+\\s"+special_char+"\\(\\)_-]*\"'";
 
 
 	/**
@@ -147,7 +147,6 @@ abstract class Consumer implements Runnable {
 	 */
 	public  void extractMentions (WikiArticle wikiArticle){
 		String text = wikiArticle.getText();
-
 		//aggiungo il titolo come mention
 		wikiArticle.addMention(wikiArticle.getTitle());
 
@@ -196,10 +195,12 @@ abstract class Consumer implements Runnable {
 
 		//rilevamento mention dalle parole in grassetto con l'espressione regolare bolRegex
 		pattern = Pattern.compile(boldRegex);
-		if (text.length()>300)
+		if (text.length()>300){
 			matcher = pattern.matcher(text.substring(0, 300));
-		else
+		}
+		else{
 			matcher = pattern.matcher(text.substring(0, text.length()-1));
+		}
 		while(matcher.find()){
 			String mentionString = matcher.group();
 			String stringCleaned = mentionString.substring(2, mentionString.length()-2);
@@ -431,18 +432,20 @@ abstract class Consumer implements Runnable {
 				indexMention.add(matcher.end());
 				countMid++;
 			}
+			/*
 			List<String> patterns = new ArrayList<String>();
-			System.out.println(phrase);
+			//System.out.println(phrase);
 			for (int i = 0; i < indexMention.size(); i++) {
 				//System.out.println("indexMentions "+i+": "+indexMention.get(i));
 				if (i!=0){
 					if((i%2)==0){
 						patterns.add(phrase.substring(indexMention.get(i-1),indexMention.get(i)));
-						System.out.println(phrase.substring(indexMention.get(i-1),indexMention.get(i)));
-						System.out.println(phrase.substring(indexMention.get(i-1),indexMention.get(i)).split(" ").length);
+						//System.out.println(phrase.substring(indexMention.get(i-1),indexMention.get(i)));
+						//System.out.println(phrase.substring(indexMention.get(i-1),indexMention.get(i)).split(" ").length);
 					}
 				}
 			}
+			*/
 			if (countMid>1)
 				phrases2mid.add(phrase);
 			if (countMid==2)

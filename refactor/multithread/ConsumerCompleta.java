@@ -37,7 +37,7 @@ public class ConsumerCompleta extends Consumer{
 		// TODO Auto-generated constructor stub
 	}
 
-	
+
 	/**
 	 * 
 	 * @param entities
@@ -61,7 +61,7 @@ public class ConsumerCompleta extends Consumer{
 			}
 		}
 	}
-	
+
 	public void addPersonRedirect(List<String> entities, WikiArticle wikiArticle){
 		String currentEntity= null;
 		TreeMap<String, Pair<String,String>> treemap = null;
@@ -115,7 +115,7 @@ public class ConsumerCompleta extends Consumer{
 		}
 	}
 
-	
+
 	@Override
 	public void run() {
 		WikiArticle current_article = null;
@@ -128,23 +128,23 @@ public class ConsumerCompleta extends Consumer{
 		int size_queue = 0;
 
 		while ((current_article = input_buffer.poll()) != null){
+
 			cont_mention = 0;
 			cont_redirect = 0;
 			System.out.println(current_article.getTitle());
 
-			
+
 			PrintWriter outArticle = null;
 			PrintWriter outMentions = null;
 
 			try {
-				 outArticle = new PrintWriter(new BufferedWriter(new FileWriter(analysis_folder+articleCompleta_folder+current_article.getTitle()+".txt", true)));
-				 outMentions = new PrintWriter(new BufferedWriter(new FileWriter(analysis_folder+mentionCompleta_folder+current_article.getTitle()+".csv", true)));
+				outArticle = new PrintWriter(new BufferedWriter(new FileWriter(analysis_folder+articleCompleta_folder+current_article.getTitle()+".txt", true)));
+				outMentions = new PrintWriter(new BufferedWriter(new FileWriter(analysis_folder+mentionCompleta_folder+current_article.getTitle()+".csv", true)));
 			} catch (IOException e) {
 				System.out.println("errore nella creazione file di testo di analisi!");
 				e.printStackTrace();
 			}
 			printer.PrintDirtyText(outArticle, current_article.getText());
-
 			extractMentions(current_article);
 
 			int cont_original_mention =current_article.getMentions().size();	//contatore delle mention originali
@@ -165,12 +165,12 @@ public class ConsumerCompleta extends Consumer{
 			countMentions(entitiesMap.get("ORGANIZATION"), current_article);
 			countMentions(entitiesMap.get("MISC"), current_article);
 			countMentions(entitiesMap.get("LOCATION"), current_article);
-			
-			
+
+
 			//aggiungo la quantità delle mention trovate in un log
 			cont_mention = cont_mention + cont_original_mention;
-			
-			
+
+
 			addRedirect(entitiesMap.get("ORGANIZATION"), current_article);
 			addRedirect(entitiesMap.get("MISC"), current_article);
 			addRedirect(entitiesMap.get("LOCATION"), current_article);
@@ -196,7 +196,7 @@ public class ConsumerCompleta extends Consumer{
 			size_queue++;
 			//conto quanti mid ci sono per frase e salvo i risultati in un log
 			logQueueMid.add(countMid(current_article));
-			
+
 			//scrivo i risultati delle analisi nei file di log
 			if (size_queue>=5){
 				logger_quantitativeAnalysis.addResult(logQueue);
@@ -206,6 +206,7 @@ public class ConsumerCompleta extends Consumer{
 			outArticle.close();
 			outMentions.close();
 			output_buffer.add(current_article);
+
 		}
 		latch.countDown();
 	}
