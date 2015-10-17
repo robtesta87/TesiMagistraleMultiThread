@@ -16,6 +16,7 @@ import org.apache.lucene.queryparser.classic.ParseException;
 import redirect.RedirectSearcher;
 import util.Pair;
 import Logger.Logger;
+import Printer.PrinterOutput;
 import bean.WikiArticle;
 import edu.stanford.nlp.ie.AbstractSequenceClassifier;
 import edu.stanford.nlp.ling.CoreLabel;
@@ -27,13 +28,12 @@ public class ConsumerCompleta extends Consumer{
 	private static String mentionCompleta_folder = "raccoltaDati/mentionCompleta/";
 
 	public ConsumerCompleta(CountDownLatch latch,
-			Queue<WikiArticle> input_buffer, Queue<WikiArticle> output_buffer,
-			FreebaseSearcher searcher,
+			Queue<WikiArticle> input_buffer,FreebaseSearcher searcher,
 			AbstractSequenceClassifier<CoreLabel> classifier,
 			String analysis_folder, Logger logger, Logger quantitativeAnalysis,
-			Logger logger_countMid, RedirectSearcher redirect_searcher) {
-		super(latch, input_buffer, output_buffer, searcher, classifier,
-				analysis_folder, logger, quantitativeAnalysis, logger_countMid, redirect_searcher);
+			Logger logger_countMid, RedirectSearcher redirect_searcher, PrinterOutput printer_output) {
+		super(latch, input_buffer, searcher, classifier,
+				analysis_folder, logger, quantitativeAnalysis, logger_countMid, redirect_searcher,printer_output);
 		// TODO Auto-generated constructor stub
 	}
 
@@ -124,7 +124,7 @@ public class ConsumerCompleta extends Consumer{
 		Map<String,List<String>> entitiesMap = null;
 		Queue<String> logQueue = new ConcurrentLinkedQueue<String>();
 		Queue<String> logQueueMid = new ConcurrentLinkedQueue<String>();
-
+		Queue<String> logQueueOutput = new ConcurrentLinkedQueue<String>();
 		int size_queue = 0;
 
 		while ((current_article = input_buffer.poll()) != null){
@@ -196,18 +196,24 @@ public class ConsumerCompleta extends Consumer{
 			size_queue++;
 			//conto quanti mid ci sono per frase e salvo i risultati in un log
 			logQueueMid.add(countMid(current_article));
-
 			//scrivo i risultati delle analisi nei file di log
 			if (size_queue>=5){
 				logger_quantitativeAnalysis.addResult(logQueue);
 				logger_countMid.addResult(logQueueMid);
+				printer_output.addResult(logQueueOutput);
 				size_queue = 0;
 			}
 			outArticle.close();
 			outMentions.close();
-			output_buffer.add(current_article);
-
+			logQueueOutput.add(getOutput(current_article));
+			
 		}
+		
+		//scrivo le informazioni degli articoli rimanenti nelle rispettive code
+		logger_quantitativeAnalysis.addResult(logQueue);
+		logger_countMid.addResult(logQueueMid);
+		printer_output.addResult(logQueueOutput);
+		
 		latch.countDown();
 	}
 

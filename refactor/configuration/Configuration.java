@@ -27,6 +27,7 @@ public class Configuration {
 	RedirectSearcher redirect_searcher = null;
 	
 	String log_file = null;
+	String output_file = null;
 
 	public Configuration(String configFilePath){
 		Properties props = null;
@@ -48,6 +49,7 @@ public class Configuration {
 		classifier = createClassifier();
 		log_file = props.getProperty("log_file").toString();
 		redirect_searcher = createRedirectSearcher(props.getProperty("redirect_index").toString());
+		output_file = props.getProperty("output_file").toString();
 	}
 
 
@@ -219,6 +221,16 @@ public class Configuration {
 	public void setRedirect_searcher(RedirectSearcher redirect_searcher) {
 		this.redirect_searcher = redirect_searcher;
 	}
+
+
+	/**
+	 * @return the output_file
+	 */
+	public String getOutput_file() {
+		return output_file;
+	}
+	
+	
 
 	
 }

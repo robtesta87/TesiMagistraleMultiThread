@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringReader;
+import java.text.BreakIterator;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -24,6 +25,7 @@ import redirect.RedirectSearcher;
 import util.Pair;
 import Logger.Logger;
 import Printer.Printer;
+import Printer.PrinterOutput;
 import SortMap.SortMap;
 import bean.WikiArticle;
 import edu.stanford.nlp.ie.AbstractSequenceClassifier;
@@ -37,7 +39,6 @@ import freebase.FreebaseSearcher;
 abstract class Consumer implements Runnable {
 	protected CountDownLatch latch;
 	protected Queue<WikiArticle> input_buffer;
-	protected Queue<WikiArticle> output_buffer;
 	protected FreebaseSearcher searcher;
 	protected AbstractSequenceClassifier<CoreLabel> classifier;
 	protected String analysis_folder;
@@ -49,6 +50,7 @@ abstract class Consumer implements Runnable {
 	protected int cont_mention;
 	protected int cont_redirect;
 	protected RedirectSearcher redirect_searcher;
+	protected PrinterOutput printer_output;
 
 	final static String special_char = "Éé?!#,\"'.îóçë&–üáà:°í#ἀνãİï/āèñöÖÆçæäüğş"
 			+ "ãÎøÁúšúćčžŠßıüÇò";
@@ -65,13 +67,12 @@ abstract class Consumer implements Runnable {
 	 * @param searcher
 	 * @param quantitativeAnalysisBase 
 	 */
-	public Consumer(CountDownLatch latch, Queue<WikiArticle> input_buffer, Queue<WikiArticle> output_buffer,
+	public Consumer(CountDownLatch latch, Queue<WikiArticle> input_buffer, 
 			FreebaseSearcher searcher, AbstractSequenceClassifier<CoreLabel> classifier, 
 			String analysis_folder, Logger logger, Logger quantitativeAnalysis,
-			Logger logger_countMid, RedirectSearcher redirect_searcher){
+			Logger logger_countMid, RedirectSearcher redirect_searcher,PrinterOutput printer_output){
 		this.latch = latch;
 		this.input_buffer = input_buffer;
-		this.output_buffer = output_buffer;
 		this.searcher = searcher;
 		this.analysis_folder = analysis_folder;
 		this.classifier = classifier;
@@ -83,6 +84,7 @@ abstract class Consumer implements Runnable {
 		this.cont_mention = 0;
 		this.cont_redirect = 0;
 		this.redirect_searcher = redirect_searcher;
+		this.printer_output = printer_output;
 	}
 
 	/**
@@ -113,20 +115,7 @@ abstract class Consumer implements Runnable {
 		this.input_buffer = input_buffer;
 	}
 
-	/**
-	 * @return the output_buffer
-	 */
-	public Queue<WikiArticle> getOutput_buffer() {
-		return output_buffer;
-	}
-
-	/**
-	 * @param output_buffer the output_buffer to set
-	 */
-	public void setOutput_buffer(Queue<WikiArticle> output_buffer) {
-		this.output_buffer = output_buffer;
-	}
-
+	
 	/**
 	 * @return the searcher
 	 */
@@ -244,6 +233,7 @@ abstract class Consumer implements Runnable {
 
 	/**
 	 * metodo che restituisce, dato una stringa (testo), una lista di frasi
+	 * formattando alcuni caratteri (es.parentesi)
 	 * @param text
 	 * @return
 	 */
@@ -255,6 +245,27 @@ abstract class Consumer implements Runnable {
 		for (List<HasWord> sentence : dp) {
 			sentenceString = Sentence.listToString(sentence);
 			sentenceList.add(sentenceString.toString());
+		}
+
+		return sentenceList;
+	}
+	
+	/**
+	 * metodo che restituisce, dato una stringa (testo), una lista di frasi
+	 * senza formattare le parentesi ed altri caratteri speciali
+	 * @param text
+	 * @return
+	 */
+	public static  List<String> getSentences2(String text){
+
+		List<String> sentenceList = new ArrayList<String>();
+		BreakIterator bi = BreakIterator.getSentenceInstance();
+		bi.setText(text);
+		int index = 0;
+		while (bi.next() != BreakIterator.DONE) {
+			String sentence = text.substring(index, bi.current());
+			sentenceList.add(sentence);
+			index = bi.current();
 		}
 
 		return sentenceList;
@@ -465,6 +476,21 @@ abstract class Consumer implements Runnable {
 		return (wikiArticle.getTitle()+"\t"+phrases2mid.size()+"\t"+phrases.size()+"\t"+percentage+"\t"+duemid+"\t"+tremid+"\t"+quattromid+"\t"+cinquemid+"\t"+altrimid);
 	}
 	
+	public String getOutput(WikiArticle wikiArticle){
+		String output = null;
+		StringBuilder builder = new StringBuilder();
+		builder.append("<doc title=\""+wikiArticle.getTitle()+"\">\n" );
+		
+		//inserire la lista di frasi(finire anche la versione base e intermedia)
+		List<String> phrases = wikiArticle.getPhrases();
+		for (String phrase : phrases) {
+			builder.append(phrase+"\n");
+		}
+		builder.append("<\\doc>\n");
+		
+		output= builder.toString();
+		return output;
+	}
 	
 	
 	

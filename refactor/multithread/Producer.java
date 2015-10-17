@@ -11,6 +11,7 @@ import java.util.concurrent.Executors;
 import org.apache.commons.compress.compressors.CompressorException;
 
 import Logger.Logger;
+import Printer.PrinterOutput;
 import bean.WikiArticle;
 import configuration.Configuration;
 import loader.Loader;
@@ -22,6 +23,7 @@ public class Producer {
 	private Logger logger;
 	private Logger logger_quantitativeAnalysis;
 	private Logger logger_countMid;
+	private PrinterOutput printer_output;
 	
 	/**
 	 * 
@@ -32,6 +34,8 @@ public class Producer {
 		setLogger(new Logger(config.getLog_file()));
 		setQuantitativeAnalysisBase(new Logger(config.getAnalysis_folder()+"quantitativeAnalysis.csv"));
 		setCountMidFile(new Logger(config.getAnalysis_folder()+"countMid.csv"));
+		setPrinterOutput(new PrinterOutput(config.getOutput_file()));
+		
 	}
 
 	/**
@@ -56,41 +60,39 @@ public class Producer {
 			e.printStackTrace();
 		}
 
-		// output_buffer
-		Queue<WikiArticle> output_buffer = new ConcurrentLinkedQueue<WikiArticle>();
 
 		// multithread architecture
 		int threads = Math.min(cores, input_buffer.size());
 		ExecutorService executor = Executors.newFixedThreadPool(threads);
 		CountDownLatch latch = new CountDownLatch(threads);
 
-		System.out.println("Inizio processo. Output Buffer Size:\t" + output_buffer.size());
+		System.out.println("Inizio processo.");
 		
 		Date start = new Date();
 		// a seconda della versione, scegli il consumer adatto
 		switch(config.getVersion()){
 		case Base:
 			for (int i = 0; i< threads ; i++){
-				executor.submit(new ConsumerBase(latch, input_buffer, output_buffer, config.getFreebase_searcher(),
+				executor.submit(new ConsumerBase(latch, input_buffer, config.getFreebase_searcher(),
 												config.getClassifier(),config.getAnalysis_folder(),
 												logger,logger_quantitativeAnalysis, logger_countMid,
-												config.getRedirect_searcher()));
+												config.getRedirect_searcher(),printer_output));
 			}
 			break;
 		case Intermedia:
 			for (int i = 0; i< threads ; i++){
-				executor.submit(new ConsumerIntermedia(latch, input_buffer, output_buffer, config.getFreebase_searcher(),
+				executor.submit(new ConsumerIntermedia(latch, input_buffer, config.getFreebase_searcher(),
 													config.getClassifier(),config.getAnalysis_folder(),
 													logger,logger_quantitativeAnalysis, logger_countMid,
-													config.getRedirect_searcher()));
+													config.getRedirect_searcher(),printer_output));
 			}
 			break;
 		case Completa:
 			for (int i = 0; i< threads ; i++){
-				executor.submit(new ConsumerCompleta(latch, input_buffer, output_buffer, config.getFreebase_searcher(),
+				executor.submit(new ConsumerCompleta(latch, input_buffer, config.getFreebase_searcher(),
 													config.getClassifier(),config.getAnalysis_folder(),
 													logger,logger_quantitativeAnalysis, logger_countMid,
-													config.getRedirect_searcher()));
+													config.getRedirect_searcher(),printer_output));
 			}
 			break;
 		}
@@ -101,7 +103,7 @@ public class Producer {
 		System.out.println("Tempo di esecuzione in ms: "+(end.getTime()-start.getTime()));
 		executor.shutdown();
 
-		System.out.println("Processo finito. Output Buffer Size:\t" + output_buffer.size());
+		System.out.println("Processo finito.");
 
 		
 	}
@@ -131,6 +133,9 @@ public class Producer {
 		this.logger_countMid = countMidFile;
 	}
 	
+	public void setPrinterOutput(PrinterOutput printer_output) {
+		this.printer_output = printer_output;
+	}
 	
 	/**
 	 * Entry point.

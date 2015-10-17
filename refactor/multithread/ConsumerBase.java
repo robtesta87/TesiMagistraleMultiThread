@@ -11,6 +11,7 @@ import java.util.concurrent.CountDownLatch;
 
 import redirect.RedirectSearcher;
 import Logger.Logger;
+import Printer.PrinterOutput;
 import bean.WikiArticle;
 import edu.stanford.nlp.ie.AbstractSequenceClassifier;
 import edu.stanford.nlp.ling.CoreLabel;
@@ -28,8 +29,8 @@ class ConsumerBase extends Consumer {
 	 * @param searcher
 	 */
 	public ConsumerBase(CountDownLatch latch, Queue<WikiArticle> input_buffer, 
-			Queue<WikiArticle> output_buffer, FreebaseSearcher searcher,AbstractSequenceClassifier<CoreLabel> classifier, String analysis_folder, Logger logger, Logger logger_quantitativeAnalysis, Logger logger_countMid, RedirectSearcher redirect_searcher) {
-		super(latch, input_buffer, output_buffer, searcher, classifier, analysis_folder, logger, logger_quantitativeAnalysis, logger_countMid, redirect_searcher);
+			FreebaseSearcher searcher,AbstractSequenceClassifier<CoreLabel> classifier, String analysis_folder, Logger logger, Logger logger_quantitativeAnalysis, Logger logger_countMid, RedirectSearcher redirect_searcher,PrinterOutput printer_output) {
+		super(latch, input_buffer, searcher, classifier, analysis_folder, logger, logger_quantitativeAnalysis, logger_countMid, redirect_searcher, printer_output);
 	}
 
 	@Override
@@ -39,6 +40,8 @@ class ConsumerBase extends Consumer {
 		WikiArticle current_article = null;
 		List<String> phrases = null;
 		Queue<String> logQueue = new ConcurrentLinkedQueue<String>();
+		Queue<String> logQueueOutput = new ConcurrentLinkedQueue<String>();
+
 		int size_queue = 0;
 		while ((current_article = input_buffer.poll()) != null){
 			System.out.println(current_article.getTitle());
@@ -65,7 +68,7 @@ class ConsumerBase extends Consumer {
 						
 			phrases = replaceMid(phrases, current_article.getMentions());
 			current_article.setPhrases(phrases);
-			
+			logQueueOutput.add(getOutput(current_article));
 			//printer.PrintMention(outArticle, current_article);
 			//printer.PrintMention(outMentions, current_article);
 			
@@ -77,14 +80,16 @@ class ConsumerBase extends Consumer {
 			size_queue++;
 			if (size_queue>=30){
 				logger_quantitativeAnalysis.addResult(logQueue);
+				printer_output.addResult(logQueueOutput);
 				size_queue = 0;
 			}
 			
 			//conto quanti mid ci sono per frase e salvo i risultati in un log
 			countMid(current_article);
 			
-			output_buffer.add(current_article);
 		}
+		logger_quantitativeAnalysis.addResult(logQueue);
+		printer_output.addResult(logQueueOutput);
 		
 		latch.countDown();
 	}

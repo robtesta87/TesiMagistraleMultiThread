@@ -12,6 +12,7 @@ import java.util.concurrent.CountDownLatch;
 
 import redirect.RedirectSearcher;
 import Logger.Logger;
+import Printer.PrinterOutput;
 import bean.WikiArticle;
 import edu.stanford.nlp.ie.AbstractSequenceClassifier;
 import edu.stanford.nlp.ling.CoreLabel;
@@ -23,9 +24,9 @@ class ConsumerIntermedia extends Consumer {
 	
 
 	public ConsumerIntermedia(CountDownLatch latch,
-			Queue<WikiArticle> input_buffer, Queue<WikiArticle> output_buffer,
-			FreebaseSearcher searcher,AbstractSequenceClassifier<CoreLabel> classifier, String analysis_folder, Logger logger, Logger logger_quantitativeAnalysis, Logger logger_countMid, RedirectSearcher redirect_searcher) {
-		super(latch, input_buffer, output_buffer, searcher, classifier, analysis_folder, logger, logger_quantitativeAnalysis, logger_countMid,redirect_searcher);
+			Queue<WikiArticle> input_buffer,
+			FreebaseSearcher searcher,AbstractSequenceClassifier<CoreLabel> classifier, String analysis_folder, Logger logger, Logger logger_quantitativeAnalysis, Logger logger_countMid, RedirectSearcher redirect_searcher, PrinterOutput printer_output) {
+		super(latch, input_buffer, searcher, classifier, analysis_folder, logger, logger_quantitativeAnalysis, logger_countMid,redirect_searcher, printer_output);
 		// TODO Auto-generated constructor stub
 	}
 
@@ -37,6 +38,8 @@ class ConsumerIntermedia extends Consumer {
 		Map<String,List<String>> entitiesMap = null;
 		Queue<String> logQueue = new ConcurrentLinkedQueue<String>();
 		Queue<String> logQueueMid = new ConcurrentLinkedQueue<String>();
+		Queue<String> logQueueOutput = new ConcurrentLinkedQueue<String>();
+
 		
 		int size_queue = 0;
 
@@ -81,7 +84,7 @@ class ConsumerIntermedia extends Consumer {
 			
 			phrases_mid = replaceMid(phrases, current_article.getMentions());
 			current_article.setPhrases(phrases_mid);
-			
+			logQueueOutput.add(getOutput(current_article));
 			/*
 			for (int i=0; i<phrases.size();i++) {
 				outArticle.println(phrases.get(i));
@@ -109,11 +112,16 @@ class ConsumerIntermedia extends Consumer {
 			if (size_queue>=5){
 				logger_quantitativeAnalysis.addResult(logQueue);
 				logger_countMid.addResult(logQueueMid);
+				printer_output.addResult(logQueueOutput);
 				size_queue = 0;
 			}
 			
-			output_buffer.add(current_article);
 		}
+		
+		logger_quantitativeAnalysis.addResult(logQueue);
+		logger_countMid.addResult(logQueueMid);
+		printer_output.addResult(logQueueOutput);
+		
 		latch.countDown();
 	}
 
