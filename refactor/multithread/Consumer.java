@@ -54,9 +54,11 @@ abstract class Consumer implements Runnable {
 
 	final static String special_char = "Éé?!#,\"'.îóçë&–üáà:°í#ἀνãİï/āèñöÖÆçæäüğş"
 			+ "ãÎøÁúšúćčžŠßıüÇò";
+	final static String special_char_for_bold = "Éé?!#,.îóçë&–üáà:°í#ἀνãİï/āèñöÖÆçæäüğş"
+			+ "ãÎøÁúšúćčžŠßıüÇò";
 	final static String mentionRegex = "\\[\\[[\\w+\\s"+special_char+"\\|\\(\\)_-]*\\]\\]";
 
-	final static String boldRegex = "\"'[\\w+\\s"+special_char+"\\(\\)_-]*\"'";
+	final static String boldRegex = "\"'[\\w+\\s"+special_char_for_bold+"\\(\\)_-]*\"'";
 
 
 	/**
