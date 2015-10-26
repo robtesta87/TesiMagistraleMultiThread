@@ -23,7 +23,7 @@ import org.apache.lucene.util.Version;
 public class InvertedIndexKB {
 
 	static final String IndexPath = "util/index_KB/";
-	static final String KBPath = "/home/chris88/Documenti/componenti/prova_annotated.tsv";
+	static final String KBPath = "/home/roberto/Scrivania/TesiMagistrale/1000_annotated.tsv";
 
 	public static void main(String[] args) throws IOException {
 

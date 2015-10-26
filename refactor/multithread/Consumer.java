@@ -348,8 +348,9 @@ abstract class Consumer implements Runnable {
 			Iterator<Entry<String, Pair<String, String>>> i = setMap.iterator();
 			while((i.hasNext())) {
 				Entry<String, Pair<String, String>> me = i.next();
-				String key = me.getKey().toString().replaceAll("\\(","-LRB- ");
-				key = key.replaceAll( "\\)"," -RRB-");
+				//String key = me.getKey().toString().replaceAll("\\(","-LRB- ");
+				//key = key.replaceAll( "\\)"," -RRB-");
+				String key = me.getKey();
 				String mid =  me.getValue().getValue();
 				phrase = phrase.replaceAll("^"+key+"[\\s]|([\\s]"+key+"[\\s])|([\\s]"+key+")$", " [["+key+"|"+mid+"]] ");
 			}

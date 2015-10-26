@@ -170,7 +170,7 @@ public class ConsumerCompleta extends Consumer{
 
 				printer.PrintCleanedText(outArticle, current_article.getText());
 
-				phrases = getSentences(current_article.getText());
+				phrases = getSentences2(current_article.getText());
 				entitiesMap = getEntities(phrases);
 
 				printer.PrintEntities(outArticle, entitiesMap);
