@@ -21,7 +21,7 @@ import freebase.FreebaseSearcher;
 class ConsumerIntermedia extends Consumer {
 	private static String articleIntermedia_folder = "raccoltaDati/ArticleIntermedia/";
 	private static String mentionIntermedia_folder = "raccoltaDati/mentionIntermedia/";
-	
+
 
 	public ConsumerIntermedia(CountDownLatch latch,
 			Queue<WikiArticle> input_buffer,
@@ -40,88 +40,90 @@ class ConsumerIntermedia extends Consumer {
 		Queue<String> logQueueMid = new ConcurrentLinkedQueue<String>();
 		Queue<String> logQueueOutput = new ConcurrentLinkedQueue<String>();
 
-		
+
 		int size_queue = 0;
 
 		while ((current_article = input_buffer.poll()) != null){
 			cont_mention=0;
 			System.out.println(current_article.getTitle());
-			
+
 			/*
 			PrintWriter outArticle = null;
 			PrintWriter outMentions = null;
-			
+
 			try {
 				 outArticle = new PrintWriter(new BufferedWriter(new FileWriter(analysis_folder+articleIntermedia_folder+current_article.getTitle()+".txt", true)));
 				 outMentions = new PrintWriter(new BufferedWriter(new FileWriter(analysis_folder+mentionIntermedia_folder+current_article.getTitle()+".csv", true)));
 			} catch (IOException e) {
 				System.out.println("errore nella creazione file di testo di analisi!");
 				e.printStackTrace();
-			}*/	
+			}
+			 */
+
 			//printer.PrintDirtyText(outArticle, current_article.getText());
 
 			extractMentions(current_article);
-			
+
 			int cont_original_mention =current_article.getMentions().size();	//contatore delle mention originali
-			
+
 			//printer.PrintCleanedText(outArticle, current_article.getText());
 
 			updateMid(current_article);
-			phrases = getSentences(current_article.getText());
-			entitiesMap = getEntities(phrases);
-			
-			//printer.PrintEntities(outArticle, entitiesMap);
-			
-			//printer.PrintMention(outArticle, current_article);
-			
-			
-			addPerson(entitiesMap.get("PERSON"), current_article);
-			
-			//controllo se nelle entità ci sono dei match esatti nelle mention originali per il controllo quantitativo
-			countMentions(entitiesMap.get("ORGANIZATION"), current_article);
-			countMentions(entitiesMap.get("MISC"), current_article);
-			countMentions(entitiesMap.get("LOCATION"), current_article);
-			
-			phrases_mid = replaceMid(phrases, current_article.getMentions());
-			current_article.setPhrases(phrases_mid);
-			logQueueOutput.add(getOutput(current_article));
-			/*
+			phrases = getSentences2(current_article.getText());
+			if (!(phrases.isEmpty())){
+				entitiesMap = getEntities(phrases);
+
+				//printer.PrintEntities(outArticle, entitiesMap);
+				//printer.PrintMention(outArticle, current_article);
+
+
+				addPerson(entitiesMap.get("PERSON"), current_article);
+
+				//controllo se nelle entità ci sono dei match esatti nelle mention originali per il controllo quantitativo
+				countMentions(entitiesMap.get("ORGANIZATION"), current_article);
+				countMentions(entitiesMap.get("MISC"), current_article);
+				countMentions(entitiesMap.get("LOCATION"), current_article);
+				phrases_mid = replaceMid(phrases, current_article.getMentions());
+				current_article.setPhrases(phrases_mid);
+				logQueueOutput.add(getOutput(current_article));
+
+				/*
 			for (int i=0; i<phrases.size();i++) {
 				outArticle.println(phrases.get(i));
 				outArticle.println(current_article.getPhrases().get(i));
-				
+
 			}
-			*/
-			
-			//printer.PrintMention(outArticle, current_article);
-			//printer.PrintMention(outMentions, current_article);
-		
-			
-			
-			//outArticle.close();
-			//outMentions.close();
-			
-			//aggiungo la quantità delle mention trovate in un log
-			cont_mention = cont_mention + cont_original_mention;
-			logQueue.add(current_article.getTitle()+"\t"+cont_original_mention+"\t"+cont_mention);
-			size_queue++;
-			//conto quanti mid ci sono per frase e salvo i risultati in un log
-			logQueueMid.add(countMid(current_article));
-			
-			//scrivo i risultati delle analisi nei file di log
-			if (size_queue>=5){
-				logger_quantitativeAnalysis.addResult(logQueue);
-				logger_countMid.addResult(logQueueMid);
-				printer_output.addResult(logQueueOutput);
-				size_queue = 0;
+				 */
+
+				//printer.PrintMention(outArticle, current_article);
+				//printer.PrintMention(outMentions, current_article);
+
+
+
+				//outArticle.close();
+				//outMentions.close();
+
+				//aggiungo la quantità delle mention trovate in un log
+				cont_mention = cont_mention + cont_original_mention;
+				logQueue.add(current_article.getTitle()+"\t"+cont_original_mention+"\t"+cont_mention);
+				size_queue++;
+				//conto quanti mid ci sono per frase e salvo i risultati in un log
+				logQueueMid.add(countMid(current_article));
+
+				//scrivo i risultati delle analisi nei file di log
+				if (size_queue>=5){
+					logger_quantitativeAnalysis.addResult(logQueue);
+					logger_countMid.addResult(logQueueMid);
+					printer_output.addResult(logQueueOutput);
+					size_queue = 0;
+				}
 			}
-			
 		}
-		
+
 		logger_quantitativeAnalysis.addResult(logQueue);
 		logger_countMid.addResult(logQueueMid);
 		printer_output.addResult(logQueueOutput);
-		
+
 		latch.countDown();
 	}
 

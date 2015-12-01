@@ -1,15 +1,21 @@
 package multithread;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringReader;
 import java.text.BreakIterator;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Queue;
 import java.util.Set;
 import java.util.TreeMap;
@@ -18,6 +24,10 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import opennlp.tools.sentdetect.SentenceDetector;
+import opennlp.tools.sentdetect.SentenceDetectorME;
+import opennlp.tools.sentdetect.SentenceModel;
 
 import org.apache.lucene.queryparser.classic.ParseException;
 
@@ -32,7 +42,11 @@ import edu.stanford.nlp.ie.AbstractSequenceClassifier;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.HasWord;
 import edu.stanford.nlp.ling.Sentence;
+import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
+import edu.stanford.nlp.pipeline.Annotation;
+import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.process.DocumentPreprocessor;
+import edu.stanford.nlp.util.CoreMap;
 import edu.stanford.nlp.util.Triple;
 import freebase.FreebaseSearcher;
 
@@ -52,14 +66,26 @@ abstract class Consumer implements Runnable {
 	protected RedirectSearcher redirect_searcher;
 	protected PrinterOutput printer_output;
 
+	//oggetto open nlp
+	private SentenceDetector sentenceDetector;
+
+	//oggetti stanford nlp
+	private Properties props;
+	private StanfordCoreNLP pipeline;
+
+
 	final static String special_char = "Éé?!#,\"'.îóçë&–üáà:°í#ἀνãİï/āèñöÖÆçæäüğş"
 			+ "ãÎøÁúšúćčžŠßıüÇò";
+	//final static String special_char_for_bold = "\"É’é?!#,.îóçë&–üáà:°í#ἀνãİï/āèñöÖÆçæäüğş"
+	//	+ "ãÎøÁúšúćčžŠßıüÇò";
 	final static String special_char_for_bold = "Éé?!#,.îóçë&–üáà:°í#ἀνãİï/āèñöÖÆçæäüğş"
 			+ "ãÎøÁúšúćčžŠßıüÇò";
 	final static String mentionRegex = "\\[\\[[\\w+\\s"+special_char+"\\|\\(\\)_-]*\\]\\]";
 
 	final static String boldRegex = "\"'[\\w+\\s"+special_char_for_bold+"\\(\\)_-]*\"'";
+	//final static String boldRegex = "\'\'[\\w+\\s"+special_char_for_bold+"\\(\\)_-]*\'\'\'";
 
+	final static String file_sentence_model = "/home/roberto/Scrivania/en-sent.bin";
 
 	/**
 	 * 
@@ -87,6 +113,18 @@ abstract class Consumer implements Runnable {
 		this.cont_redirect = 0;
 		this.redirect_searcher = redirect_searcher;
 		this.printer_output = printer_output;
+
+		//creazione oggetto open nlp
+		try {
+			this.sentenceDetector = new SentenceDetectorME(new SentenceModel(new File(file_sentence_model)));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		//creazione oggetti stanford nlp
+		this.props = new Properties();
+		this.props.setProperty("annotators", "tokenize, ssplit");
+		this.pipeline = new StanfordCoreNLP(props);
 	}
 
 	/**
@@ -117,7 +155,7 @@ abstract class Consumer implements Runnable {
 		this.input_buffer = input_buffer;
 	}
 
-	
+
 	/**
 	 * @return the searcher
 	 */
@@ -183,7 +221,7 @@ abstract class Consumer implements Runnable {
 			}
 
 		}	
-
+		
 		//rilevamento mention dalle parole in grassetto con l'espressione regolare bolRegex
 		pattern = Pattern.compile(boldRegex);
 		if (text.length()>300){
@@ -197,6 +235,7 @@ abstract class Consumer implements Runnable {
 			String stringCleaned = mentionString.substring(2, mentionString.length()-2);
 			wikiArticle.addMention(stringCleaned, wikiArticle.getWikid());
 		}	
+
 		wikiArticle.setText(text);
 
 	}
@@ -239,7 +278,7 @@ abstract class Consumer implements Runnable {
 	 * @param text
 	 * @return
 	 */
-	public static List<String> getSentences(String text){
+	public List<String> getSentences(String text){
 		Reader reader = new StringReader(text);
 		DocumentPreprocessor dp = new DocumentPreprocessor(reader);
 		List<String> sentenceList = new ArrayList<String>();
@@ -251,26 +290,34 @@ abstract class Consumer implements Runnable {
 
 		return sentenceList;
 	}
-	
+
 	/**
 	 * metodo che restituisce, dato una stringa (testo), una lista di frasi
 	 * senza formattare le parentesi ed altri caratteri speciali
 	 * @param text
 	 * @return
 	 */
-	public static  List<String> getSentences2(String text){
+	public List<String> getSentencesOpenNLP(String text){
+		List<String> sentences = new ArrayList<String>(Arrays.asList(sentenceDetector.sentDetect(text)));
+		return sentences;
+	}
 
-		List<String> sentenceList = new ArrayList<String>();
-		BreakIterator bi = BreakIterator.getSentenceInstance();
-		bi.setText(text);
-		int index = 0;
-		while (bi.next() != BreakIterator.DONE) {
-			String sentence = text.substring(index, bi.current());
-			sentenceList.add(sentence);
-			index = bi.current();
+	public List<String> getSentences2(String text){
+		List<String> phrases = new ArrayList<String>();
+		// create an empty Annotation just with the given text
+		Annotation document = new Annotation(text);
+
+		// run all Annotators on this text
+		pipeline.annotate(document);
+
+		// these are all the sentences in this document
+		// a CoreMap is essentially a Map that uses class objects as keys and has values with custom types
+		List<CoreMap> sentences = document.get(SentencesAnnotation.class);
+		for(CoreMap sentence: sentences) {
+			phrases.add(sentence.toString());
 		}
 
-		return sentenceList;
+		return phrases;
 	}
 
 	/**
@@ -348,18 +395,61 @@ abstract class Consumer implements Runnable {
 			Iterator<Entry<String, Pair<String, String>>> i = setMap.iterator();
 			while((i.hasNext())) {
 				Entry<String, Pair<String, String>> me = i.next();
-				//String key = me.getKey().toString().replaceAll("\\(","-LRB- ");
-				//key = key.replaceAll( "\\)"," -RRB-");
-				String key = me.getKey();
-				String mid =  me.getValue().getValue();
-				phrase = phrase.replaceAll("^"+key+"[\\s]|([\\s]"+key+"[\\s])|([\\s]"+key+")$", " [["+key+"|"+mid+"]] ");
+				
+				String key = me.getKey().toString();
+				if (!key.equals("")){
+					String wikid = me.getValue().getKey();
+					String mid =  me.getValue().getValue();
+					phrase = phrase.replaceAll("^"+key+"[\\s]|([\\s]"+key+"[\\s\'.,:;!?])|([\\s]"+key+")$|\"'"+key+"\"'", " [["+wikid+"|"+mid+"]] ").trim();
+				}
 			}
 			phrasesMid.add(phrase);
 		}
 		return phrasesMid;
 	}
 
+	public static List<String> replaceMidGIW (List<String> phrases,TreeMap<String, Pair<String,String>> treemap,Map<String,List<String>> entitiesMap, WikiArticle wikiArticle){
+		Map<String, Pair<String, String>> sortedMap = null;
 
+		sortedMap = sortMap.sortByValues(treemap);
+
+		Set<Entry<String, Pair<String, String>>> setMap = sortedMap.entrySet();
+
+		List<String> phrasesMid = new ArrayList<String>();
+
+		for (String phrase:phrases){
+
+			Iterator<Entry<String, Pair<String, String>>> i = setMap.iterator();
+			while((i.hasNext())) {
+				Entry<String, Pair<String, String>> me = i.next();
+				String key = me.getKey().toString();
+				if (!key.equals("")){
+					String wikid = me.getValue().getKey();
+
+					String mid =  me.getValue().getValue();
+					String type ="";
+					if (wikid.equals(wikiArticle.getWikid())){
+						type = "PERSON";
+					}
+					else{
+						if (entitiesMap.get("MISC").contains(wikid.replaceAll("_", " ")))
+							type = "MISC";
+						if (entitiesMap.get("ORGANIZATION").contains(wikid.replaceAll("_", " ")))
+							type = "ORGANIZATION";
+						if (entitiesMap.get("PERSON").contains(wikid.replaceAll("_", " ")))
+							type = "PERSON";
+						if (entitiesMap.get("LOCATION").contains(wikid.replaceAll("_", " ")))
+							type = "LOCATION";
+					}
+					if (!(phrase.equals("")))
+						phrase = phrase.replaceAll("^"+key+"[\\s]|([\\s\']"+key+"[\\s\'.,:;!?])|([\\s]"+key+")$", " [["+wikid+"|"+mid+"|"+type+"]] ").trim();
+				}
+			}
+
+			phrasesMid.add(phrase);
+		}
+		return phrasesMid;
+	}
 	/**
 	 * aggiunge per ogni persona individuata dal NER il cognome (ultima parola)
 	 * @param entities
@@ -446,20 +536,7 @@ abstract class Consumer implements Runnable {
 				indexMention.add(matcher.end());
 				countMid++;
 			}
-			/*
-			List<String> patterns = new ArrayList<String>();
-			//System.out.println(phrase);
-			for (int i = 0; i < indexMention.size(); i++) {
-				//System.out.println("indexMentions "+i+": "+indexMention.get(i));
-				if (i!=0){
-					if((i%2)==0){
-						patterns.add(phrase.substring(indexMention.get(i-1),indexMention.get(i)));
-						//System.out.println(phrase.substring(indexMention.get(i-1),indexMention.get(i)));
-						//System.out.println(phrase.substring(indexMention.get(i-1),indexMention.get(i)).split(" ").length);
-					}
-				}
-			}
-			*/
+			
 			if (countMid>1)
 				phrases2mid.add(phrase);
 			if (countMid==2)
@@ -475,27 +552,27 @@ abstract class Consumer implements Runnable {
 
 		}
 		float percentage = (phrases2mid.size() * 100)/phrases.size();
-		
+
 		return (wikiArticle.getTitle()+"\t"+phrases2mid.size()+"\t"+phrases.size()+"\t"+percentage+"\t"+duemid+"\t"+tremid+"\t"+quattromid+"\t"+cinquemid+"\t"+altrimid);
 	}
-	
+
 	public String getOutput(WikiArticle wikiArticle){
 		String output = null;
 		StringBuilder builder = new StringBuilder();
 		builder.append("<doc title=\""+wikiArticle.getTitle()+"\">\n" );
-		
+
 		//inserire la lista di frasi(finire anche la versione base e intermedia)
 		List<String> phrases = wikiArticle.getPhrases();
 		for (String phrase : phrases) {
 			builder.append(phrase+"\n");
 		}
 		builder.append("<\\doc>\n");
-		
+
 		output= builder.toString();
 		return output;
 	}
-	
-	
-	
+
+
+
 
 }
