@@ -131,30 +131,17 @@ public class ConsumerCompleta extends Consumer{
 			cont_mention = 0;
 			cont_redirect = 0;
 			System.out.println(current_article.getTitle());
-
-			PrintWriter outArticle = null;
-			PrintWriter outMentions = null;
-
-			try {
-				outArticle = new PrintWriter(new BufferedWriter(new FileWriter(analysis_folder+articleCompleta_folder+current_article.getTitle()+".txt", true)));
-				outMentions = new PrintWriter(new BufferedWriter(new FileWriter(analysis_folder+mentionCompleta_folder+current_article.getTitle()+".csv", true)));
-			} catch (IOException e) {
-				System.out.println("errore nella creazione file di testo di analisi!");
-				e.printStackTrace();
-			}
-			printer.PrintDirtyText(outArticle, current_article.getText());
+			
+			String dirty_text = current_article.getText();
+			
 			extractMentions(current_article);
 
 			int cont_original_mention =current_article.getMentions().size();	//contatore delle mention originali
 
-			printer.PrintCleanedText(outArticle, current_article.getText());
+			String cleaned_text = current_article.getText();
 
-			phrases = getSentences(current_article.getText());
+			phrases = getSentences2(current_article.getText());
 			entitiesMap = getEntities(phrases);
-
-			printer.PrintEntities(outArticle, entitiesMap);
-
-			printer.PrintMention(outArticle, current_article);
 
 			addPersonRedirect(entitiesMap.get("PERSON"), current_article);
 
@@ -174,22 +161,14 @@ public class ConsumerCompleta extends Consumer{
 			phrases_mid = replaceMid(phrases, current_article.getMentions());
 			current_article.setPhrases(phrases_mid);
 
-			/*
-			for (int i=0; i<phrases.size();i++) {
-				outArticle.println(phrases.get(i));
-				outArticle.println(current_article.getPhrases().get(i));
-
-			}
-			 */
-
-			printer.PrintMention(outArticle, current_article);
-			printer.PrintMention(outMentions, current_article);
-
 			cont_redirect = cont_redirect+cont_mention;
 			logQueue.add(current_article.getTitle()+"\t"+cont_original_mention+"\t"+cont_mention+" \t"+ cont_redirect);
 			size_queue++;
 			//conto quanti mid ci sono per frase e salvo i risultati in un log
 			logQueueMid.add(countMid(current_article));
+			
+			//printArticles(current_article, dirty_text, cleaned_text, phrases);
+			
 			//scrivo i risultati delle analisi nei file di log
 			if (size_queue>=5){
 				logger_quantitativeAnalysis.addResult(logQueue);
@@ -197,10 +176,7 @@ public class ConsumerCompleta extends Consumer{
 				printer_output.addResult(logQueueOutput);
 				size_queue = 0;
 			}
-			outArticle.close();
-			outMentions.close();
 			logQueueOutput.add(getOutput(current_article));
-
 		}
 
 		//scrivo le informazioni degli articoli rimanenti nelle rispettive code
@@ -209,6 +185,32 @@ public class ConsumerCompleta extends Consumer{
 		printer_output.addResult(logQueueOutput);
 
 		latch.countDown();
+	}
+	
+	public void printArticles(WikiArticle current_article,String dirty_text,String cleaned_text, List<String> phrases){
+		PrintWriter outArticle = null;
+		PrintWriter outMentions = null;
+		try {
+			outArticle = new PrintWriter(new BufferedWriter(new FileWriter(analysis_folder+articleCompleta_folder+current_article.getTitle()+".txt", true)));
+			outMentions = new PrintWriter(new BufferedWriter(new FileWriter(analysis_folder+mentionCompleta_folder+current_article.getTitle()+".csv", true)));
+		} catch (IOException e) {
+			System.out.println("errore nella creazione file di testo di analisi!");
+			e.printStackTrace();
+		}	
+		
+		printer.PrintDirtyText(outArticle, dirty_text);
+		printer.PrintCleanedText(outArticle, cleaned_text);
+		
+		for (int i=0; i<phrases.size();i++) {
+			outArticle.println(phrases.get(i));
+			outArticle.println(current_article.getPhrases().get(i));
+
+		}
+		
+		printer.PrintMention(outArticle, current_article);
+		printer.PrintMention(outMentions, current_article);
+		outArticle.close();
+		outMentions.close();
 	}
 
 }

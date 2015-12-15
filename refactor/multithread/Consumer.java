@@ -1,14 +1,9 @@
 package multithread;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringReader;
-import java.text.BreakIterator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -193,29 +188,27 @@ abstract class Consumer implements Runnable {
 				if (!(splitted[0].contains("#"))){
 					if (!splitted[0].equals("")){
 						wikiArticle.addMention(splitted[0]);
-						text = text.replace(mentionString, splitted[0]);
+						text = text.replace(mentionString, " "+splitted[0]+" ");
 					}
 					else{
-						text = text.replace(mentionString, splitted[1]);
+						text = text.replace(mentionString, " "+splitted[1]+" ");
 					}
 				}
 				else{
 					//provo a prendere l'articolo riguardante la sotto-mention anzichè scartarla
 					wikiArticle.addMention(splitted[0].split("#")[0]);
-
-					text = text.replace(mentionString, stringCleaned);
+					text = text.replace(mentionString, " "+splitted[0].split("#")[0]+" ");
 				}
 			}
 			else{
-				//evito di inserire le sotto-mention
 				if (!(stringCleaned.contains("#"))){
 					wikiArticle.addMention(stringCleaned);
-					text = text.replace(mentionString, stringCleaned);
+					text = text.replace(mentionString, " "+stringCleaned+" ");
 				}
 				else{
 					//provo a prendere l'articolo riguardante la sotto-mention anzichè scartarla
 					wikiArticle.addMention(stringCleaned.split("#")[0]);
-					text = text.replace(mentionString, stringCleaned);
+					text = text.replace(mentionString, " "+stringCleaned.split("#")[0]+" ");
 				}
 
 			}
@@ -314,7 +307,7 @@ abstract class Consumer implements Runnable {
 		// a CoreMap is essentially a Map that uses class objects as keys and has values with custom types
 		List<CoreMap> sentences = document.get(SentencesAnnotation.class);
 		for(CoreMap sentence: sentences) {
-			phrases.add(sentence.toString());
+			phrases.add(" "+sentence.toString()+" ");
 		}
 
 		return phrases;
@@ -332,7 +325,6 @@ abstract class Consumer implements Runnable {
 		List<String> location = new ArrayList<String>();
 		List<String> organization = new ArrayList<String>();
 		Map<String,List<String>> entityMap = new HashMap<String, List<String>>();
-		String log = "";
 		Queue<String> logQueue = new ConcurrentLinkedQueue<String>();
 		try {
 			for(String currentPhrase : phrases){
@@ -388,22 +380,37 @@ abstract class Consumer implements Runnable {
 		sortedMap = sortMap.sortByValues(treemap);
 
 		Set<Entry<String, Pair<String, String>>> setMap = sortedMap.entrySet();
-
 		List<String> phrasesMid = new ArrayList<String>();
-
+		String old_phrase = "";
+		int cont_mid;
 		for (String phrase:phrases){
 			Iterator<Entry<String, Pair<String, String>>> i = setMap.iterator();
+			cont_mid = 0;
 			while((i.hasNext())) {
 				Entry<String, Pair<String, String>> me = i.next();
 				
 				String key = me.getKey().toString();
-				if (!key.equals("")){
+				if ((!key.equals(""))){
 					String wikid = me.getValue().getKey();
 					String mid =  me.getValue().getValue();
-					phrase = phrase.replaceAll("^"+key+"[\\s]|([\\s]"+key+"[\\s\'.,:;!?])|([\\s]"+key+")$|\"'"+key+"\"'", " [["+wikid+"|"+mid+"]] ").trim();
+					old_phrase = phrase;
+					//phrase = phrase.replaceAll("^"+key+"[\\s]|([\\s]"+key+"[\\s\'.,:;!?])|([\\s]"+key+")$|\"'"+key+"\"'", " [["+wikid+"|"+mid+"]] ");
+					phrase = phrase.replace(" "+key+" ", " [["+wikid+"|"+mid+"]] ");
+					phrase = phrase.replace(key+"'", " [["+wikid+"|"+mid+"]] '");
+					phrase = phrase.replace(key+"\"", " [["+wikid+"|"+mid+"]] \"");
+					phrase = phrase.replace(key+".", " [["+wikid+"|"+mid+"]] .");
+					phrase = phrase.replace(key+",", " [["+wikid+"|"+mid+"]] ,");
+					phrase = phrase.replace(key+":", " [["+wikid+"|"+mid+"]] :");
+					phrase = phrase.replace(key+";", " [["+wikid+"|"+mid+"]] ;");
+					phrase = phrase.replace(key+"!", " [["+wikid+"|"+mid+"]] !");
+					phrase = phrase.replace(key+"?", " [["+wikid+"|"+mid+"]] ?");
+					
+					if (!(old_phrase.equals(phrase))){
+						cont_mid++;
+					}
 				}
 			}
-			phrasesMid.add(phrase);
+			phrasesMid.add(cont_mid+"##"+phrase);
 		}
 		return phrasesMid;
 	}
@@ -524,14 +531,12 @@ abstract class Consumer implements Runnable {
 		int cinquemid = 0;
 		int altrimid = 0;
 		List<String> phrases = wikiArticle.getPhrases();
-		String mentionString = null;
 		for (String phrase : phrases) {
 			List<Integer> indexMention = new ArrayList<Integer>();
 			countMid=0;
 			pattern = Pattern.compile(mentionRegex);
 			matcher = pattern.matcher(phrase);
 			while(matcher.find()){
-				mentionString = matcher.group();
 				indexMention.add(matcher.start());
 				indexMention.add(matcher.end());
 				countMid++;
