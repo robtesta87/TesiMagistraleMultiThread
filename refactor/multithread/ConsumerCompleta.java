@@ -164,13 +164,14 @@ public class ConsumerCompleta extends Consumer{
 			cont_redirect = cont_redirect+cont_mention;
 			logQueue.add(current_article.getTitle()+"\t"+cont_original_mention+"\t"+cont_mention+" \t"+ cont_redirect);
 			size_queue++;
+			
 			//conto quanti mid ci sono per frase e salvo i risultati in un log
-			logQueueMid.add(countMid(current_article));
+			//logQueueMid.add(countMid(current_article));
 			
 			//printArticles(current_article, dirty_text, cleaned_text, phrases);
 			
 			//scrivo i risultati delle analisi nei file di log
-			if (size_queue>=5){
+			if (size_queue>=10){
 				logger_quantitativeAnalysis.addResult(logQueue);
 				logger_countMid.addResult(logQueueMid);
 				printer_output.addResult(logQueueOutput);

@@ -374,7 +374,7 @@ abstract class Consumer implements Runnable {
 	 * @param out
 	 * @return
 	 */
-	public static List<String> replaceMid (List<String> phrases,TreeMap<String, Pair<String,String>> treemap){
+	public List<String> replaceMid (List<String> phrases,TreeMap<String, Pair<String,String>> treemap){
 		Map<String, Pair<String, String>> sortedMap = null;
 
 		sortedMap = sortMap.sortByValues(treemap);
@@ -414,8 +414,31 @@ abstract class Consumer implements Runnable {
 		}
 		return phrasesMid;
 	}
-
-	public static List<String> replaceMidGIW (List<String> phrases,TreeMap<String, Pair<String,String>> treemap,Map<String,List<String>> entitiesMap, WikiArticle wikiArticle){
+	
+	/**
+	 * metodo di replace che sostituisce la mention con [[wikid|mid]]
+	 * 
+	 * DA TESTARE
+	 * 
+	 * @param text
+	 * @param mention
+	 * @param wikid
+	 * @param mid
+	 * @return
+	 */
+	public String replace(String text,String mention, String wikid, String mid){
+		int start_substring = 0;
+		String new_text = "";
+		Pattern pattern = Pattern.compile("^"+mention+"[\\s]|([\\s]"+mention+"[\\s\'.,:;!?])|([\\s]"+mention+")$|\"'"+mention+"\"'");
+		Matcher matcher = pattern.matcher(text);
+		while(matcher.find()){
+			new_text = new_text+text.substring(start_substring, matcher.start())+" [["+wikid+"|"+mid+"]] ";
+			start_substring = matcher.end();
+		}
+		return new_text;
+		
+	}
+	public List<String> replaceMidGIW (List<String> phrases,TreeMap<String, Pair<String,String>> treemap,Map<String,List<String>> entitiesMap, WikiArticle wikiArticle){
 		Map<String, Pair<String, String>> sortedMap = null;
 
 		sortedMap = sortMap.sortByValues(treemap);
