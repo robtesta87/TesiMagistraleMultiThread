@@ -87,9 +87,9 @@ class ConsumerBase extends Consumer {
 				logQueue.add(current_article.getTitle()+"\t"+getNumberMention(current_article));
 
 				//conto quanti mid ci sono per frase e salvo i risultati in un log
-				//logQueueMid.add(countMid(current_article));
+				logQueueMid.add(countMid(current_article));
 				
-				//printArticles(current_article, dirty_text, cleaned_text);
+				printArticles(current_article, dirty_text, cleaned_text);
 				
 				size_queue++;
 				if (size_queue>=10){

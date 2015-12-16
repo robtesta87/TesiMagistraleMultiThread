@@ -48,9 +48,9 @@ class ConsumerIntermedia extends Consumer {
 			System.out.println(current_article.getTitle());
 
 			String dirty_text = current_article.getText();
-			
+
 			extractMentions(current_article);
-			
+
 			String cleaned_text = current_article.getText();
 
 			int cont_original_mention =current_article.getMentions().size();	//contatore delle mention originali
@@ -74,13 +74,13 @@ class ConsumerIntermedia extends Consumer {
 				cont_mention = cont_mention + cont_original_mention;
 				logQueue.add(current_article.getTitle()+"\t"+cont_original_mention+"\t"+cont_mention);
 				size_queue++;
-				
+
 				//conto quanti mid ci sono per frase e salvo i risultati in un log
 				//logQueueMid.add(countMid(current_article));
 
-				
-				//printArticles(current_article, dirty_text, cleaned_text,phrases);
-				
+
+				printArticles(current_article, dirty_text, cleaned_text,phrases);
+
 				//scrivo i risultati delle analisi nei file di log
 				if (size_queue>=10){
 					logger_quantitativeAnalysis.addResult(logQueue);
@@ -89,6 +89,7 @@ class ConsumerIntermedia extends Consumer {
 					size_queue = 0;
 				}
 			}
+
 		}
 
 		logger_quantitativeAnalysis.addResult(logQueue);
@@ -107,16 +108,16 @@ class ConsumerIntermedia extends Consumer {
 			System.out.println("errore nella creazione file di testo di analisi!");
 			e.printStackTrace();
 		}	
-		
+
 		printer.PrintDirtyText(outArticle, dirty_text);
 		printer.PrintCleanedText(outArticle, cleaned_text);
-		
+
 		for (int i=0; i<phrases.size();i++) {
 			outArticle.println(phrases.get(i));
 			outArticle.println(current_article.getPhrases().get(i));
 
 		}
-		
+
 		printer.PrintMention(outArticle, current_article);
 		printer.PrintMention(outMentions, current_article);
 		outArticle.close();

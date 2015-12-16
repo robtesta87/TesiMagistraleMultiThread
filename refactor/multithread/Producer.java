@@ -143,8 +143,8 @@ public class Producer {
 	 */
 	public static void main(String[] args){
 		
-//		String config_file = "/home/roberto/workspace/TesiMagistraleMultiThread/refactor/util/config.properties";
-		String config_file = "/home/ubuntu/input/util/config.properties";
+		String config_file = "/home/roberto/workspace/TesiMagistraleMultiThread/refactor/util/config.properties";
+//		String config_file = "/home/ubuntu/input/util/config.properties";
 
 		Configuration config = new Configuration(config_file);
 		Producer producer = new Producer(config);

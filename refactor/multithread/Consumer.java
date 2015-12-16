@@ -75,7 +75,8 @@ abstract class Consumer implements Runnable {
 	//	+ "ãÎøÁúšúćčžŠßıüÇò";
 	final static String special_char_for_bold = "Éé?!#,.îóçë&–üáà:°í#ἀνãİï/āèñöÖÆçæäüğş"
 			+ "ãÎøÁúšúćčžŠßıüÇò";
-	final static String mentionRegex = "\\[\\[[\\w+\\s"+special_char+"\\|\\(\\)_-]*\\]\\]";
+	//	final static String mentionRegex = "\\[\\[[\\w+\\s"+special_char+"\\|\\(\\)_-]*\\]\\]";
+	final static String mentionRegex = "\\[\\[[\\w+\\s"+special_char+"\\(\\)_-]+\\|*[\\w+\\s"+special_char+"\\(\\)_-]+\\]\\]";
 
 	final static String boldRegex = "\"'[\\w+\\s"+special_char_for_bold+"\\(\\)_-]*\"'";
 	//final static String boldRegex = "\'\'[\\w+\\s"+special_char_for_bold+"\\(\\)_-]*\'\'\'";
@@ -181,7 +182,6 @@ abstract class Consumer implements Runnable {
 		while(matcher.find()){
 			String mentionString = matcher.group();
 			String stringCleaned = mentionString.substring(2, mentionString.length()-2);
-
 			if(stringCleaned.contains("|")){
 				String[] splitted = stringCleaned.split("\\|");
 				//primo campo: text secondo campo: wikiid
@@ -212,9 +212,8 @@ abstract class Consumer implements Runnable {
 				}
 
 			}
-
 		}	
-		
+
 		//rilevamento mention dalle parole in grassetto con l'espressione regolare bolRegex
 		pattern = Pattern.compile(boldRegex);
 		if (text.length()>300){
@@ -388,23 +387,16 @@ abstract class Consumer implements Runnable {
 			cont_mid = 0;
 			while((i.hasNext())) {
 				Entry<String, Pair<String, String>> me = i.next();
-				
+
 				String key = me.getKey().toString();
 				if ((!key.equals(""))){
 					String wikid = me.getValue().getKey();
 					String mid =  me.getValue().getValue();
 					old_phrase = phrase;
 					//phrase = phrase.replaceAll("^"+key+"[\\s]|([\\s]"+key+"[\\s\'.,:;!?])|([\\s]"+key+")$|\"'"+key+"\"'", " [["+wikid+"|"+mid+"]] ");
-					phrase = phrase.replace(" "+key+" ", " [["+wikid+"|"+mid+"]] ");
-					phrase = phrase.replace(key+"'", " [["+wikid+"|"+mid+"]] '");
-					phrase = phrase.replace(key+"\"", " [["+wikid+"|"+mid+"]] \"");
-					phrase = phrase.replace(key+".", " [["+wikid+"|"+mid+"]] .");
-					phrase = phrase.replace(key+",", " [["+wikid+"|"+mid+"]] ,");
-					phrase = phrase.replace(key+":", " [["+wikid+"|"+mid+"]] :");
-					phrase = phrase.replace(key+";", " [["+wikid+"|"+mid+"]] ;");
-					phrase = phrase.replace(key+"!", " [["+wikid+"|"+mid+"]] !");
-					phrase = phrase.replace(key+"?", " [["+wikid+"|"+mid+"]] ?");
-					
+
+					phrase = replace(phrase, key, wikid, mid);
+
 					if (!(old_phrase.equals(phrase))){
 						cont_mid++;
 					}
@@ -414,30 +406,20 @@ abstract class Consumer implements Runnable {
 		}
 		return phrasesMid;
 	}
-	
-	/**
-	 * metodo di replace che sostituisce la mention con [[wikid|mid]]
-	 * 
-	 * DA TESTARE
-	 * 
-	 * @param text
-	 * @param mention
-	 * @param wikid
-	 * @param mid
-	 * @return
-	 */
-	public String replace(String text,String mention, String wikid, String mid){
-		int start_substring = 0;
-		String new_text = "";
-		Pattern pattern = Pattern.compile("^"+mention+"[\\s]|([\\s]"+mention+"[\\s\'.,:;!?])|([\\s]"+mention+")$|\"'"+mention+"\"'");
-		Matcher matcher = pattern.matcher(text);
-		while(matcher.find()){
-			new_text = new_text+text.substring(start_substring, matcher.start())+" [["+wikid+"|"+mid+"]] ";
-			start_substring = matcher.end();
-		}
-		return new_text;
-		
+
+	public String replace(String phrase,String key,String wikid,String mid){
+		phrase = phrase.replace(" "+key+" ", " [["+wikid+"|"+mid+"]] ");
+		phrase = phrase.replace(key+"'", " [["+wikid+"|"+mid+"]] '");
+		phrase = phrase.replace(key+"\"", " [["+wikid+"|"+mid+"]] \"");
+		phrase = phrase.replace(key+".", " [["+wikid+"|"+mid+"]] .");
+		phrase = phrase.replace(key+",", " [["+wikid+"|"+mid+"]] ,");
+		phrase = phrase.replace(key+":", " [["+wikid+"|"+mid+"]] :");
+		phrase = phrase.replace(key+";", " [["+wikid+"|"+mid+"]] ;");
+		phrase = phrase.replace(key+"!", " [["+wikid+"|"+mid+"]] !");
+		phrase = phrase.replace(key+"?", " [["+wikid+"|"+mid+"]] ?");
+		return phrase;
 	}
+
 	public List<String> replaceMidGIW (List<String> phrases,TreeMap<String, Pair<String,String>> treemap,Map<String,List<String>> entitiesMap, WikiArticle wikiArticle){
 		Map<String, Pair<String, String>> sortedMap = null;
 
@@ -564,7 +546,7 @@ abstract class Consumer implements Runnable {
 				indexMention.add(matcher.end());
 				countMid++;
 			}
-			
+
 			if (countMid>1)
 				phrases2mid.add(phrase);
 			if (countMid==2)
