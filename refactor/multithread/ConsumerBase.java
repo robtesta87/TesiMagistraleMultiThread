@@ -60,6 +60,7 @@ class ConsumerBase extends Consumer {
 
 		WikiArticle current_article = null;
 		List<String> phrases = null;
+		List<String> phrases_mid = null;
 		Queue<String> logQueue = new ConcurrentLinkedQueue<String>();
 		Queue<String> logQueueOutput = new ConcurrentLinkedQueue<String>();
 		Queue<String> logQueueMid = new ConcurrentLinkedQueue<String>();
@@ -77,8 +78,8 @@ class ConsumerBase extends Consumer {
 				
 				phrases = getSentences2(current_article.getText());	
 
-				phrases = replaceMid(phrases, current_article.getMentions());
-				current_article.setPhrases(phrases);
+				phrases_mid = replaceMid(phrases, current_article.getMentions());
+				current_article.setPhrases(phrases_mid);
 				logQueueOutput.add(getOutput(current_article));
 
 				//aggiungo la quantità delle mention trovate in un log
@@ -89,7 +90,7 @@ class ConsumerBase extends Consumer {
 				//conto quanti mid ci sono per frase e salvo i risultati in un log
 				logQueueMid.add(countMid(current_article));
 				
-				printArticles(current_article, dirty_text, cleaned_text);
+				printArticles(current_article, dirty_text, cleaned_text,phrases);
 				
 				size_queue++;
 				if (size_queue>=10){
@@ -108,7 +109,7 @@ class ConsumerBase extends Consumer {
 		latch.countDown();
 	}
 	
-	public void printArticles(WikiArticle current_article,String dirty_text,String cleaned_text){
+	public void printArticles(WikiArticle current_article,String dirty_text,String cleaned_text, List<String> phrases){
 		PrintWriter outArticle = null;
 		PrintWriter outMentions = null;
 		try {
@@ -121,6 +122,13 @@ class ConsumerBase extends Consumer {
 		
 		printer.PrintDirtyText(outArticle, dirty_text);
 		printer.PrintCleanedText(outArticle, cleaned_text);
+		
+		for (int i=0; i<phrases.size();i++) {
+			outArticle.println(phrases.get(i));
+			outArticle.println(current_article.getPhrases().get(i));
+
+		}
+		
 		printer.PrintMention(outArticle, current_article);
 		printer.PrintMention(outMentions, current_article);
 		outArticle.close();

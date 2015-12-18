@@ -15,6 +15,7 @@ import util.Pair;
 public class WikiArticle{
 	
 	private String wikid;
+	private String mid;
 	private String title;
 	private String text;
 	
@@ -33,6 +34,7 @@ public class WikiArticle{
 		this.text = text;
 		this.mentions = new TreeMap<String, Pair<String, String>>();
 		this.phrases = new ArrayList<String>();
+		this.mid = null;
 	}
 	
 	/**
@@ -96,6 +98,22 @@ public class WikiArticle{
 	 */
 	public void setPhrases(List<String> phrases) {
 		this.phrases = phrases;
+	}
+
+	
+	
+	/**
+	 * @return the mid
+	 */
+	public String getMid() {
+		return mid;
+	}
+
+	/**
+	 * @param mid the mid to set
+	 */
+	public void setMid(String mid) {
+		this.mid = mid;
 	}
 
 	/**

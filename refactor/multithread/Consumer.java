@@ -239,12 +239,27 @@ abstract class Consumer implements Runnable {
 	 * @param wikiArticle
 	 */
 	public void updateMid (WikiArticle wikiArticle){
+		//cerco il mid del wikid dell'articolo
 		TreeMap<String, Pair<String, String>> mentions = wikiArticle.getMentions();
+		Pair<String, String> mappingBean = null;
+		Pair<String, String> pair = null;
+		String wikid_article = wikiArticle.getWikid();
+		try {
+			mappingBean = searcher.getMid(wikid_article);
+			//System.out.println(mappingBean.toString());
+		} catch (ParseException | IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		String mid = "";
+		if (mappingBean!=null){
+			mid = mappingBean.getValue();
+			wikiArticle.setMid(mid);
+		}
+		
 		Iterator<String> keyIterator = mentions.keySet().iterator();
 		String currentEntity = null;
-		Pair<String, String> pair = null;
 		String wikid = null; 
-		Pair<String, String> mappingBean = null;
 		while(keyIterator.hasNext()){
 			currentEntity = keyIterator.next();
 			pair = mentions.get(currentEntity);
@@ -256,7 +271,7 @@ abstract class Consumer implements Runnable {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			String mid="";
+			mid="";
 			if (mappingBean!=null){
 				mid= mappingBean.getValue();
 				pair.setValue(mid);
@@ -402,21 +417,30 @@ abstract class Consumer implements Runnable {
 					}
 				}
 			}
-			phrasesMid.add(cont_mid+"##"+phrase);
+			String[] splitted_phrase = phrase.split("\\[\\[");
+			cont_mid = splitted_phrase.length-1;
+			phrasesMid.add(cont_mid+"\t"+phrase);
 		}
 		return phrasesMid;
 	}
 
 	public String replace(String phrase,String key,String wikid,String mid){
-		phrase = phrase.replace(" "+key+" ", " [["+wikid+"|"+mid+"]] ");
-		phrase = phrase.replace(key+"'", " [["+wikid+"|"+mid+"]] '");
-		phrase = phrase.replace(key+"\"", " [["+wikid+"|"+mid+"]] \"");
-		phrase = phrase.replace(key+".", " [["+wikid+"|"+mid+"]] .");
-		phrase = phrase.replace(key+",", " [["+wikid+"|"+mid+"]] ,");
-		phrase = phrase.replace(key+":", " [["+wikid+"|"+mid+"]] :");
-		phrase = phrase.replace(key+";", " [["+wikid+"|"+mid+"]] ;");
-		phrase = phrase.replace(key+"!", " [["+wikid+"|"+mid+"]] !");
-		phrase = phrase.replace(key+"?", " [["+wikid+"|"+mid+"]] ?");
+		
+		phrase = phrase.replace(" "+key+" ", "[["+wikid+"|"+mid+"]]");
+		phrase = phrase.replace(" "+key+"'", "[["+wikid+"|"+mid+"]]'");
+		phrase = phrase.replace(" "+key+"\"", "[["+wikid+"|"+mid+"]]\"");
+		phrase = phrase.replace(" "+key+".", "[["+wikid+"|"+mid+"]].");
+		phrase = phrase.replace(" "+key+",", "[["+wikid+"|"+mid+"]],");
+		phrase = phrase.replace(" "+key+":", "[["+wikid+"|"+mid+"]]:");
+		phrase = phrase.replace(" "+key+";", "[["+wikid+"|"+mid+"]];");
+		phrase = phrase.replace(" "+key+"!", "[["+wikid+"|"+mid+"]]!");
+		phrase = phrase.replace(" "+key+"?", "[["+wikid+"|"+mid+"]]?");
+		phrase = phrase.replace(" ("+key+")", " ([["+wikid+"|"+mid+"]])");
+		phrase = phrase.replace(" ("+key+" ", " ([["+wikid+"|"+mid+"]]");
+		phrase = phrase.replace(" \""+key+"\"", " \"[["+wikid+"|"+mid+"]]\"");
+		phrase = phrase.replace(" \""+key+" ", "\"[["+wikid+"|"+mid+"]]");
+		phrase = phrase.replace(" \"'"+key+"\"'", "\"[["+wikid+"|"+mid+"]]\"");
+		
 		return phrase;
 	}
 
@@ -569,14 +593,14 @@ abstract class Consumer implements Runnable {
 	public String getOutput(WikiArticle wikiArticle){
 		String output = null;
 		StringBuilder builder = new StringBuilder();
-		builder.append("<doc title=\""+wikiArticle.getTitle()+"\">\n" );
+		//builder.append("<doc title=\""+wikiArticle.getTitle()+"\">\n" );
 
 		//inserire la lista di frasi(finire anche la versione base e intermedia)
 		List<String> phrases = wikiArticle.getPhrases();
 		for (String phrase : phrases) {
-			builder.append(phrase+"\n");
+			builder.append(wikiArticle.getWikid()+"\t"+wikiArticle.getMid()+"\t"+phrase+"\n");
 		}
-		builder.append("<\\doc>\n");
+		//builder.append("<\\doc>\n");
 
 		output= builder.toString();
 		return output;
